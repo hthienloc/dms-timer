@@ -1,0 +1,10 @@
+{
+    "id": "timer",
+    "name": "Timer",
+    "description": "Countdown timer with presets and custom input",
+    "version": "1.0.0",
+    "license": "GPL-3.0",
+    "author": "Loc Huynh",
+    "icon": "timer",
+    "component": "./TimerWidget.qml"
+}
