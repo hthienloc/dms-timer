@@ -131,6 +131,7 @@ PluginComponent {
         PopoutComponent {
             headerText: "Timer"
             detailsText: globalIsRunning.value ? "Running..." :
+                        globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value ? "Paused" :
                         globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? "Finished!" : "Ready"
             showCloseButton: true
 
