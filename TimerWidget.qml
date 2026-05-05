@@ -36,7 +36,7 @@ PluginComponent {
             globalRemainingSeconds.set(newVal)
             if (newVal === 0) {
                 globalIsRunning.set(false)
-                // Reset immediately and show popout
+                // Reset immediately and show popout as notification
                 globalRemainingSeconds.set(0)
                 globalTotalSeconds.set(0)
                 pluginPopout.open()
@@ -120,12 +120,6 @@ PluginComponent {
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
                 color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            StyledText {
-                text: formatTime(globalRemainingSeconds.value)
-                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 font.pixelSize: Theme.fontSizeSmall
                 isMonospace: true
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -145,14 +139,14 @@ PluginComponent {
                 width: parent.width
                 spacing: Theme.spacingL
 
-            StyledText {
-                text: formatTime(globalRemainingSeconds.value)
-                font.pixelSize: 48
-                isMonospace: true
-                font.weight: Font.Bold
-                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : (globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error : Theme.surfaceText))
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
+                StyledText {
+                    text: formatTime(globalRemainingSeconds.value)
+                    font.pixelSize: 48
+                    isMonospace: true
+                    font.weight: Font.Bold
+                    color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : (globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error : Theme.surfaceText))
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
 
                 Grid {
                     columns: 3
@@ -174,7 +168,7 @@ PluginComponent {
 
                 Row {
                     spacing: Theme.spacingM
-                    anchors.horizontalCenter: parent.horizontalCenter;
+                    anchors.horizontalCenter: parent.horizontalCenter
 
                     DankButton {
                         text: globalIsRunning.value ? "Pause" : (globalRemainingSeconds.value < globalTotalSeconds.value ? "Resume" : "Start")
@@ -184,24 +178,6 @@ PluginComponent {
                         enabled: globalRemainingSeconds.value > 0
                         onClicked: toggleTimer()
                     }
-
-                    DankButton {
-                        text: "Test Popout"
-                        onClicked: pluginPopout.open()
-                    }
-
-                    DankButton {
-                        text: "Reset"
-                        iconName: "refresh"
-                        backgroundColor: Theme.surfaceContainerHigh
-                        textColor: Theme.surfaceText
-                        onClicked: {
-                            globalIsRunning.set(false)
-                            globalRemainingSeconds.set(0)
-                            globalTotalSeconds.set(0)
-                        }
-                    }
-                }
 
                     DankButton {
                         text: "Reset"
