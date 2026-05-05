@@ -174,7 +174,7 @@ PluginComponent {
 
                 Row {
                     spacing: Theme.spacingM
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter;
 
                     DankButton {
                         text: globalIsRunning.value ? "Pause" : (globalRemainingSeconds.value < globalTotalSeconds.value ? "Resume" : "Start")
@@ -184,6 +184,24 @@ PluginComponent {
                         enabled: globalRemainingSeconds.value > 0
                         onClicked: toggleTimer()
                     }
+
+                    DankButton {
+                        text: "Test Popout"
+                        onClicked: pluginPopout.open()
+                    }
+
+                    DankButton {
+                        text: "Reset"
+                        iconName: "refresh"
+                        backgroundColor: Theme.surfaceContainerHigh
+                        textColor: Theme.surfaceText
+                        onClicked: {
+                            globalIsRunning.set(false)
+                            globalRemainingSeconds.set(0)
+                            globalTotalSeconds.set(0)
+                        }
+                    }
+                }
 
                     DankButton {
                         text: "Reset"
