@@ -88,13 +88,13 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                color: globalIsRunning.value ? (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary) : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                color: globalIsRunning.value ? (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary) : Theme.surfaceText
                 font.pixelSize: Theme.fontSizeMedium
                 isMonospace: true
                 anchors.verticalCenter: parent.verticalCenter
@@ -110,7 +110,15 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                color: !globalIsRunning.value && globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning :
+                       globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            StyledText {
+                text: formatTime(globalRemainingSeconds.value)
+                color: !globalIsRunning.value && globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning :
+                       globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
