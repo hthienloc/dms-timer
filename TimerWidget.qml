@@ -36,10 +36,9 @@ PluginComponent {
             globalRemainingSeconds.set(newVal)
             if (newVal === 0) {
                 globalIsRunning.set(false)
-                // Reset immediately and show popout as notification
+                // Reset immediately
                 globalRemainingSeconds.set(0)
                 globalTotalSeconds.set(0)
-                pluginPopout.open()
             }
         }
     }
