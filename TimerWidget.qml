@@ -36,7 +36,9 @@ PluginComponent {
             globalRemainingSeconds.set(newVal)
             if (newVal === 0) {
                 globalIsRunning.set(false)
-                // TODO: Add notification using Quickshell.execDetached or D-Bus
+                // Auto reset immediately
+                globalRemainingSeconds.set(0)
+                globalTotalSeconds.set(0)
             }
         }
     }
@@ -88,13 +90,13 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: globalIsRunning.value ? (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary) : Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalIsRunning.value ? (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary) : Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
                 font.pixelSize: Theme.fontSizeMedium
                 isMonospace: true
                 anchors.verticalCenter: parent.verticalCenter
@@ -110,15 +112,13 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: !globalIsRunning.value && globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning :
-                       globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: !globalIsRunning.value && globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning :
-                       globalIsRunning.value ? Theme.primary : Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
@@ -144,16 +144,14 @@ PluginComponent {
                 width: parent.width
                 spacing: Theme.spacingL
 
-                StyledText {
-                    text: formatTime(globalRemainingSeconds.value)
-                    font.pixelSize: 48
-                    isMonospace: true
-                    font.weight: Font.Bold
-                    color: globalRemainingSeconds.value <= 60 && globalRemainingSeconds.value > 0 ? Theme.warning :
-                           globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error :
-                           Theme.surfaceText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+            StyledText {
+                text: formatTime(globalRemainingSeconds.value)
+                font.pixelSize: 48
+                isMonospace: true
+                font.weight: Font.Bold
+                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : (globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error : Theme.surfaceText))
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
 
                 Grid {
                     columns: 3
