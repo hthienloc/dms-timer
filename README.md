@@ -20,9 +20,10 @@ git -C ~/.config/DankMaterialShell/plugins/timer pull
 
 ## Features
 
-- Quick preset buttons: 5, 10, 15, 20, 25, 30 minutes
-- Custom input for any duration
+- Quick preset buttons: 5, 10, 15, 20, 25, 30, 45, 60, 120 minutes
+- Custom input for any duration (1-999 minutes)
 - Visual warnings: yellow at ≤60s, red when finished
+- Smart button states: Start → Resume (when paused) → Pause/Stop
 - Left click: Open detailed popout with controls
 - Right click: Quick start/pause from the bar
 - Uses DMS theme tokens and monospace font

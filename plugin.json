@@ -6,5 +6,6 @@
     "license": "GPL-3.0",
     "author": "Loc Huynh",
     "icon": "timer",
-    "component": "./TimerWidget.qml"
+    "component": "./TimerWidget.qml",
+    "screenshot": "https://raw.githubusercontent.com/hthienloc/dms-timer/master/screenshot.png"
 }

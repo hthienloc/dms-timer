@@ -34,8 +34,9 @@ PluginComponent {
         onTriggered: {
             const newVal = globalRemainingSeconds.value - 1
             globalRemainingSeconds.set(newVal)
-            if (newVal <= 0) {
+            if (newVal === 0) {
                 globalIsRunning.set(false)
+                // TODO: Add notification using Quickshell.execDetached or D-Bus
             }
         }
     }
@@ -60,12 +61,19 @@ PluginComponent {
         const seconds = minutes * 60
         globalTotalSeconds.set(seconds)
         globalRemainingSeconds.set(seconds)
-        globalIsRunning.set(false)
+        globalIsRunning.set(true)
     }
 
     function toggleTimer() {
         if (globalRemainingSeconds.value <= 0) return
         globalIsRunning.set(!globalIsRunning.value)
+    }
+
+    function isValidInput(text) {
+        if (text === "") return false
+        if (!/^\d+$/.test(text)) return false
+        const num = parseInt(text, 10)
+        return num >= 1 && num <= 999
     }
 
     pillRightClickAction: () => {
@@ -147,16 +155,18 @@ PluginComponent {
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
-                Row {
+                Grid {
+                    columns: 3
                     spacing: Theme.spacingS
+                    horizontalItemAlignment: Grid.AlignHCenter
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: !globalIsRunning.value && globalRemainingSeconds.value === 0
 
                     Repeater {
-                        model: [5, 10, 15, 20, 25, 30]
+                        model: [5, 10, 15, 20, 25, 30, 45, 60, 120]
                         delegate: DankButton {
-                            text: modelData + "m"
-                            backgroundColor: Theme.primaryContainer
+                            text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                            backgroundColor: Theme.primary
                             textColor: Theme.onPrimary
                             onClicked: setTimer(modelData)
                         }
@@ -168,10 +178,10 @@ PluginComponent {
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     DankButton {
-                        text: globalIsRunning.value ? "Pause" : "Start"
+                        text: globalIsRunning.value ? "Pause" : (globalRemainingSeconds.value < globalTotalSeconds.value ? "Resume" : "Start")
                         iconName: globalIsRunning.value ? "pause" : "play_arrow"
-                        backgroundColor: globalIsRunning.value ? Theme.warning : Theme.primary
-                        textColor: globalIsRunning.value ? Theme.onSurface : Theme.onPrimary
+                        backgroundColor: globalIsRunning.value ? Theme.error : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary)
+                        textColor: globalIsRunning.value ? Theme.onError : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.onSurface : Theme.onPrimary)
                         enabled: globalRemainingSeconds.value > 0
                         onClicked: toggleTimer()
                     }
@@ -203,8 +213,6 @@ PluginComponent {
                     TextField {
                         id: customInput
                         width: 80
-                        placeholderText: "e.g. 45"
-                        validator: IntValidator { bottom: 1; top: 999 }
                         color: Theme.surfaceText
                         background: Rectangle {
                             radius: Theme.cornerRadiusSmall
@@ -217,7 +225,7 @@ PluginComponent {
                         text: "Set"
                         backgroundColor: Theme.primary
                         textColor: Theme.onPrimary
-                        enabled: customInput.text !== ""
+                        enabled: isValidInput(customInput.text)
                         onClicked: {
                             setTimer(parseInt(customInput.text))
                             customInput.text = ""
