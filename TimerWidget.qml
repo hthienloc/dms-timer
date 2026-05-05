@@ -183,6 +183,7 @@ PluginComponent {
                         iconName: "refresh"
                         backgroundColor: Theme.surfaceContainerHigh
                         textColor: Theme.surfaceText
+                        visible: globalRemainingSeconds.value > 0 && !globalIsRunning.value
                         onClicked: {
                             globalIsRunning.set(false)
                             globalRemainingSeconds.set(0)
