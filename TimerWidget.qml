@@ -112,7 +112,7 @@ PluginComponent {
                 size: Theme.iconSizeSmall
                 color: !globalIsRunning.value && globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning :
                        globalIsRunning.value ? Theme.primary : Theme.surfaceText
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
             StyledText {
