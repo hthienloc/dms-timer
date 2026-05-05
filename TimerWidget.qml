@@ -88,17 +88,13 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: globalRemainingSeconds.value <= 60 && globalRemainingSeconds.value > 0 ? Theme.warning :
-                       globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error :
-                       Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalRemainingSeconds.value <= 60 && globalRemainingSeconds.value > 0 ? Theme.warning :
-                       globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error :
-                       Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 font.pixelSize: Theme.fontSizeMedium
                 isMonospace: true
                 anchors.verticalCenter: parent.verticalCenter
@@ -114,17 +110,13 @@ PluginComponent {
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
                 size: Theme.iconSizeSmall
-                color: globalRemainingSeconds.value <= 60 && globalRemainingSeconds.value > 0 ? Theme.warning :
-                       globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error :
-                       Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalRemainingSeconds.value <= 60 && globalRemainingSeconds.value > 0 ? Theme.warning :
-                       globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error :
-                       Theme.surfaceText
+                color: globalIsRunning.value ? Theme.primary : Theme.surfaceText
                 font.pixelSize: Theme.fontSizeSmall
                 isMonospace: true
                 anchors.horizontalCenter: parent.horizontalCenter
