@@ -175,7 +175,7 @@ PluginComponent {
                         backgroundColor: globalIsRunning.value ? Theme.error : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary)
                         textColor: globalIsRunning.value ? Theme.onError : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.onSurface : Theme.onPrimary)
                         enabled: globalRemainingSeconds.value > 0
-                        visible: globalRemainingSeconds.value === 0 || globalIsRunning.value
+                        visible: globalRemainingSeconds.value > 0
                         onClicked: toggleTimer()
                     }
 
