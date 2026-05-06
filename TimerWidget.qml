@@ -229,7 +229,7 @@ PluginComponent {
                     if (root.isFinished) return "Finished!"
                     return "Ready"
                 }
-                showCloseButton: true
+                showCloseButton: false
 
                 Column {
                     width: parent.width
