@@ -205,30 +205,6 @@ PluginComponent {
             }
             showCloseButton: true
 
-            headerActions: Component {
-                DankIcon {
-                    name: "settings"
-                    size: Theme.iconSize - 4
-                    color: settingsArea.containsMouse ? Theme.primary : Theme.surfaceText
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    MouseArea {
-                        id: settingsArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            Proc.runCommand(
-                                "dms-settings",
-                                ["qs", "-c", "dms", "ipc", "call", "settings", "open"],
-                                null,
-                                0
-                            )
-                        }
-                    }
-                }
-            }
-
             Column {
                 width: parent.width
                 spacing: Theme.spacingL
