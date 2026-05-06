@@ -1,6 +1,6 @@
 # Timer Plugin
 
-A countdown timer plugin for [Dank Material Shell](https://github.com/AvengeMedia/DankMaterialShell).
+A feature-rich countdown timer plugin for [Dank Material Shell](https://github.com/AvengeMedia/DankMaterialShell).
 
 ![Screenshot](screenshot.png)
 
@@ -20,19 +20,29 @@ git -C ~/.config/DankMaterialShell/plugins/timer pull
 
 ## Features
 
-- Quick preset buttons: 5, 10, 15, 20, 25, 30, 45, 60, 120 minutes
-- Custom input for any duration (1-999 minutes)
-- Visual warnings: yellow at ≤60s, red when finished
-- Smart button states: Start → Resume (when paused) → Pause/Stop
-- Left click: Open detailed popout with controls
-- Right click: Quick start/pause from the bar
-- Uses DMS theme tokens and monospace font
+- **Quick Presets**: Customizable minute buttons (default: 5, 10, 15, 20, 25, 30, 45, 60, 120).
+- **Custom Duration**: Input any specific time manually.
+- **Customizable Notifications**:
+    - Toggle desktop notifications.
+    - Custom title and message content.
+- **Advanced Sound Support**:
+    - Use system critical notification sound.
+    - Set a custom sound file path (`.oga`, `.mp3`, etc.).
+- **Flexible Display**:
+    - Multiple bar formats: `00:00:00`, `1h 5m 10s`, or `5m 10s`.
+    - Accessibility hints for bar interactions (configurable).
+- **Timeout Behavior**: Choose to stay at zero or auto-reset to ready state.
+- **Visual Feedback**: Bar pill changes color during warnings (≤60s) and timeout.
+- **Interactive Controls**:
+    - **Left click**: Open detailed popout.
+    - **Right click**: Quick pause/resume from the bar.
 
 ## Structure
 
 ```
 dms-timer/
 ├── TimerWidget.qml      # Main logic and UI
+├── TimerSettings.qml    # Settings interface
 ├── plugin.json          # Plugin manifest
 ├── LICENSE
 └── README.md
