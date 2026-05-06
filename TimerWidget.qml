@@ -297,21 +297,15 @@ PluginComponent {
                         }
                     }
 
-                    Row {
-                        spacing: Theme.spacingS
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        visible: root.isReady
+                Row {
+                    spacing: Theme.spacingS
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.isReady
 
-                        StyledText {
-                            text: "Custom (minutes):"
-                            color: Theme.surfaceText
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-
-                        DankTextField {
-                            id: customInput
-                            width: 100
-                            placeholderText: "Mins..."
+                    DankTextField {
+                        id: customInput
+                        width: 80
+                        placeholderText: "Mins..."
                             showClearButton: true
                             Component.onCompleted: {
                                 root.manualInputInput = customInput;
