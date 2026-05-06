@@ -154,7 +154,7 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Row {
-            spacing: Theme.spacingS
+            spacing: root.displayFormat === "icon" ? 0 : Theme.spacingS
 
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
@@ -169,13 +169,14 @@ PluginComponent {
                 font.pixelSize: Theme.fontSizeMedium
                 isMonospace: true
                 anchors.verticalCenter: parent.verticalCenter
+                visible: root.displayFormat !== "icon"
             }
         }
     }
 
     verticalBarPill: Component {
         Column {
-            spacing: Theme.spacingS
+            spacing: root.displayFormat === "icon" ? 0 : Theme.spacingS
 
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
@@ -191,6 +192,7 @@ PluginComponent {
                 isMonospace: true
                 anchors.horizontalCenter: parent.horizontalCenter
                 rotation: 90
+                visible: root.displayFormat !== "icon"
             }
         }
     }

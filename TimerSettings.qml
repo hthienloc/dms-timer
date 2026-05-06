@@ -85,7 +85,8 @@ PluginSettings {
                 options: [
                     { label: "00:00:00", value: "full" },
                     { label: "1h 5m 10s", value: "compact" },
-                    { label: "5m 10s", value: "minimal" }
+                    { label: "5m 10s", value: "minimal" },
+                    { label: "Icon Only", value: "icon" }
                 ]
                 defaultValue: "full"
             }
