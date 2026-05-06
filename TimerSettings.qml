@@ -89,6 +89,13 @@ PluginSettings {
                 ]
                 defaultValue: "full"
             }
+
+            ToggleSetting {
+                settingKey: "showHints"
+                label: "Show Accessibility Hints"
+                description: "Display helpful usage tips at the bottom of the popout."
+                defaultValue: true
+            }
         }
     }
 

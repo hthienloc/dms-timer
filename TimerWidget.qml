@@ -304,11 +304,12 @@ PluginComponent {
                     color: Theme.surfaceVariantText
                     horizontalAlignment: Text.AlignHCenter
                     width: parent.width
+                    visible: root.showHints
                 }
             }
         }
     }
 
     popoutWidth: 400
-    popoutHeight: 380
+    popoutHeight: root.showHints ? 380 : 340
 }
