@@ -40,6 +40,7 @@ PluginComponent {
     readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
     readonly property string displayFormat: pluginData.displayFormat || "full"
+    readonly property bool showHints: pluginData.showHints ?? true
 
     Timer {
         id: timer
