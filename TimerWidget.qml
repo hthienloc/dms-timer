@@ -236,7 +236,7 @@ PluginComponent {
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                             if (!root.isReady) {
-                                root.toggleTimer();
+                                root.resetTimer();
                                 event.accepted = true;
                             }
                         }
@@ -334,17 +334,18 @@ PluginComponent {
                     }
 
                     StyledText {
-                        text: "Hint: [Enter] or Right-click bar icon to start/pause."
+                        text: root.isReady ? "Hint: [Enter] to start. Right-click bar icon to toggle."
+                                           : "Hint: [Enter] to reset. Right-click bar icon to pause/resume."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         visible: root.showHints
-                    }                }
+                    }
             }
         }
     }
 
-    popoutWidth: 400
+    popoutWidth: 360
     popoutHeight: root.showHints ? 380 : 340
 }
