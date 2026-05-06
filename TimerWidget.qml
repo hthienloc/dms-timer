@@ -235,7 +235,7 @@ PluginComponent {
 
                     Keys.onPressed: (event) => {
                         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (!root.isReady) {
+                            if (!root.isReady && !customInput.getActiveFocus()) {
                                 root.resetTimer();
                                 event.accepted = true;
                             }
@@ -297,15 +297,15 @@ PluginComponent {
                         }
                     }
 
-                Row {
-                    spacing: Theme.spacingS
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.isReady
+                    Row {
+                        spacing: Theme.spacingS
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: root.isReady
 
-                    DankTextField {
-                        id: customInput
-                        width: 80
-                        placeholderText: "Mins..."
+                        DankTextField {
+                            id: customInput
+                            width: 80
+                            placeholderText: "Mins..."
                             showClearButton: true
                             Component.onCompleted: {
                                 root.manualInputInput = customInput;
@@ -334,14 +334,14 @@ PluginComponent {
                     }
 
                     StyledText {
-                        text: root.isReady ? "Hint: [Enter] to start. Right-click bar icon to toggle."
-                                           : "Hint: [Enter] to reset. Right-click bar icon to pause/resume."
+                        text: "Hint: [Enter] to reset. Right-click bar icon to start/pause."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
                         visible: root.showHints
                     }
+                }
             }
         }
     }
