@@ -36,9 +36,23 @@ PluginComponent {
             globalRemainingSeconds.set(newVal)
             if (newVal === 0) {
                 globalIsRunning.set(false)
-                // Reset immediately
-                globalRemainingSeconds.set(0)
-                globalTotalSeconds.set(0)
+                Proc.runCommand(
+                    "timer-notify",
+                    ["notify-send", "-i", "appointment-soon", "-u", "normal", "Timer", "Timeout!"],
+                    null,
+                    0
+                )
+                if (AudioService.soundsAvailable) {
+                    AudioService.playCriticalNotificationSound()
+                } else {
+                    Proc.runCommand(
+                        "timer-sound",
+                        ["paplay", "--property=media.role=event",
+                         "/usr/share/sounds/freedesktop/stereo/complete.oga"],
+                        null,
+                        0
+                    )
+                }
             }
         }
     }
@@ -49,13 +63,9 @@ PluginComponent {
         const seconds = totalSeconds % 60
 
         let result = ""
-
-        if (hours > 0) {
+        if (hours > 0)
             result += hours.toString().padStart(2, '0') + ":"
-        }
-
         result += minutes.toString().padStart(2, '0') + ":" + seconds.toString().padStart(2, '0')
-
         return result
     }
 
@@ -71,6 +81,12 @@ PluginComponent {
         globalIsRunning.set(!globalIsRunning.value)
     }
 
+    function resetTimer() {
+        globalIsRunning.set(false)
+        globalRemainingSeconds.set(0)
+        globalTotalSeconds.set(0)
+    }
+
     function isValidInput(text) {
         if (text === "") return false
         if (!/^\d+$/.test(text)) return false
@@ -78,25 +94,32 @@ PluginComponent {
         return num >= 1 && num <= 999
     }
 
-    pillRightClickAction: () => {
-        toggleTimer()
+    readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
+    readonly property bool isPaused: !globalIsRunning.value && globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
+    readonly property bool isReady: globalRemainingSeconds.value === 0 && globalTotalSeconds.value === 0
+
+    readonly property color pillColor: {
+        if (globalIsRunning.value) return Theme.primary
+        if (isPaused || isFinished) return Theme.warning
+        return Theme.surfaceText
     }
+
+    pillRightClickAction: () => { toggleTimer() }
 
     horizontalBarPill: Component {
         Row {
-            id: content
             spacing: Theme.spacingS
 
             DankIcon {
-                name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
+                name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                 size: Theme.iconSizeSmall
-                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
+                color: root.pillColor
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
+                color: root.pillColor
                 font.pixelSize: Theme.fontSizeMedium
                 isMonospace: true
                 anchors.verticalCenter: parent.verticalCenter
@@ -106,19 +129,18 @@ PluginComponent {
 
     verticalBarPill: Component {
         Column {
-            id: content
             spacing: Theme.spacingS
 
             DankIcon {
-                name: globalIsRunning.value ? "pause" : (globalRemainingSeconds.value > 0 ? "play_arrow" : "timer")
+                name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                 size: Theme.iconSizeSmall
-                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
+                color: root.pillColor
                 anchors.horizontalCenter: parent.horizontalCenter
             }
 
             StyledText {
                 text: formatTime(globalRemainingSeconds.value)
-                color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.surfaceText)
+                color: root.pillColor
                 font.pixelSize: Theme.fontSizeSmall
                 isMonospace: true
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -130,9 +152,12 @@ PluginComponent {
     popoutContent: Component {
         PopoutComponent {
             headerText: "Timer"
-            detailsText: globalIsRunning.value ? "Running..." :
-                        globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value ? "Paused" :
-                        globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? "Finished!" : "Ready"
+            detailsText: {
+                if (globalIsRunning.value) return "Running..."
+                if (root.isPaused) return "Paused"
+                if (root.isFinished) return "Finished!"
+                return "Ready"
+            }
             showCloseButton: true
 
             Column {
@@ -144,7 +169,12 @@ PluginComponent {
                     font.pixelSize: 48
                     isMonospace: true
                     font.weight: Font.Bold
-                    color: globalIsRunning.value ? Theme.primary : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : (globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0 ? Theme.error : Theme.surfaceText))
+                    color: {
+                        if (globalIsRunning.value) return Theme.primary
+                        if (root.isPaused) return Theme.warning
+                        if (root.isFinished) return Theme.error
+                        return Theme.surfaceText
+                    }
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
@@ -153,7 +183,7 @@ PluginComponent {
                     spacing: Theme.spacingS
                     horizontalItemAlignment: Grid.AlignHCenter
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !globalIsRunning.value && globalRemainingSeconds.value === 0
+                    visible: root.isReady
 
                     Repeater {
                         model: [5, 10, 15, 20, 25, 30, 45, 60, 120]
@@ -169,14 +199,14 @@ PluginComponent {
                 Row {
                     spacing: Theme.spacingM
                     anchors.horizontalCenter: parent.horizontalCenter
+                    visible: !root.isReady
 
                     DankButton {
-                        text: globalIsRunning.value ? "Pause" : (globalRemainingSeconds.value < globalTotalSeconds.value ? "Resume" : "Start")
+                        text: globalIsRunning.value ? "Pause" : (root.isPaused ? "Resume" : "Start")
                         iconName: globalIsRunning.value ? "pause" : "play_arrow"
-                        backgroundColor: globalIsRunning.value ? Theme.error : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.warning : Theme.primary)
-                        textColor: globalIsRunning.value ? Theme.onError : (globalRemainingSeconds.value < globalTotalSeconds.value ? Theme.onSurface : Theme.onPrimary)
-                        enabled: globalRemainingSeconds.value > 0
-                        visible: globalRemainingSeconds.value > 0
+                        backgroundColor: globalIsRunning.value ? Theme.error : (root.isPaused ? Theme.warning : Theme.primary)
+                        textColor: globalIsRunning.value ? Theme.onError : (root.isPaused ? Theme.onSurface : Theme.onPrimary)
+                        visible: !root.isFinished
                         onClicked: toggleTimer()
                     }
 
@@ -185,19 +215,14 @@ PluginComponent {
                         iconName: "refresh"
                         backgroundColor: Theme.surfaceContainerHigh
                         textColor: Theme.surfaceText
-                        visible: globalRemainingSeconds.value > 0
-                        onClicked: {
-                            globalIsRunning.set(false)
-                            globalRemainingSeconds.set(0)
-                            globalTotalSeconds.set(0)
-                        }
+                        onClicked: resetTimer()
                     }
                 }
 
                 Row {
                     spacing: Theme.spacingS
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !globalIsRunning.value && globalRemainingSeconds.value === 0
+                    visible: root.isReady
 
                     StyledText {
                         text: "Custom (minutes):"
@@ -230,6 +255,7 @@ PluginComponent {
             }
         }
     }
+
     popoutWidth: 400
     popoutHeight: 350
 }
