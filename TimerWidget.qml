@@ -209,6 +209,18 @@ PluginComponent {
             Column {
                 width: parent.width
                 spacing: Theme.spacingL
+                focus: true
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        if (!root.isReady) {
+                            root.toggleTimer();
+                        } else if (isValidInput(customInput.text)) {
+                            setTimer(parseInt(customInput.text));
+                            customInput.text = "";
+                        }
+                        event.accepted = true;
+                    }
+                }
 
                 StyledText {
                     text: formatTime(globalRemainingSeconds.value)
@@ -280,10 +292,21 @@ PluginComponent {
                         id: customInput
                         width: 80
                         color: Theme.surfaceText
+                        Component.onCompleted: {
+                            if (root.isReady) {
+                                customInput.forceActiveFocus();
+                            }
+                        }
                         background: Rectangle {
                             radius: Theme.cornerRadiusSmall
                             color: Theme.surfaceContainer
                             border.color: Theme.outline
+                        }
+                        onEditingFinished: {
+                            if (isValidInput(text)) {
+                                setTimer(parseInt(text))
+                                text = ""
+                            }
                         }
                     }
 
