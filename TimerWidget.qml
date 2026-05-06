@@ -196,139 +196,154 @@ PluginComponent {
     }
 
     popoutContent: Component {
-        PopoutComponent {
-            headerText: "Timer"
-            detailsText: {
-                if (globalIsRunning.value) return "Running..."
-                if (root.isPaused) return "Paused"
-                if (root.isFinished) return "Finished!"
-                return "Ready"
+        FocusScope {
+            id: contentFocusScope
+            anchors.fill: parent
+            focus: true
+
+            property var parentPopout: null
+
+            Connections {
+                target: parentPopout
+                function onOpened() {
+                    if (root.isReady) {
+                        Qt.callLater(() => customInput.forceActiveFocus());
+                    } else {
+                        contentFocusScope.forceActiveFocus();
+                    }
+                }
             }
-            showCloseButton: true
 
-            Column {
-                width: parent.width
-                spacing: Theme.spacingL
-                focus: true
-                Keys.onPressed: (event) => {
-                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                        if (!root.isReady) {
-                            root.toggleTimer();
-                        } else if (isValidInput(customInput.text)) {
-                            setTimer(parseInt(customInput.text));
-                            customInput.text = "";
-                        }
-                        event.accepted = true;
-                    }
+            PopoutComponent {
+                headerText: "Timer"
+                detailsText: {
+                    if (globalIsRunning.value) return "Running..."
+                    if (root.isPaused) return "Paused"
+                    if (root.isFinished) return "Finished!"
+                    return "Ready"
                 }
+                showCloseButton: true
 
-                StyledText {
-                    text: formatTime(globalRemainingSeconds.value)
-                    font.pixelSize: 48
-                    isMonospace: true
-                    font.weight: Font.Bold
-                    color: {
-                        if (globalIsRunning.value) return Theme.primary
-                        if (root.isPaused) return Theme.warning
-                        if (root.isFinished) return Theme.error
-                        return Theme.surfaceText
-                    }
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+                Column {
+                    width: parent.width
+                    spacing: Theme.spacingL
 
-                Grid {
-                    columns: 3
-                    spacing: Theme.spacingS
-                    horizontalItemAlignment: Grid.AlignHCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.isReady
-
-                    Repeater {
-                        model: root.presets
-                        delegate: DankButton {
-                            text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                            backgroundColor: Theme.primary
-                            textColor: Theme.onPrimary
-                            onClicked: setTimer(modelData)
+                    Keys.onPressed: (event) => {
+                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                            if (!root.isReady) {
+                                root.toggleTimer();
+                            } else if (isValidInput(customInput.text)) {
+                                setTimer(parseInt(customInput.text));
+                                customInput.text = "";
+                            }
+                            event.accepted = true;
                         }
                     }
-                }
-
-                Row {
-                    spacing: Theme.spacingM
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: !root.isReady
-
-                    DankButton {
-                        text: globalIsRunning.value ? "Pause" : (root.isPaused ? "Resume" : "Start")
-                        iconName: globalIsRunning.value ? "pause" : "play_arrow"
-                        backgroundColor: globalIsRunning.value ? Theme.error : (root.isPaused ? Theme.warning : Theme.primary)
-                        textColor: globalIsRunning.value ? Theme.onError : (root.isPaused ? Theme.onSurface : Theme.onPrimary)
-                        visible: !root.isFinished
-                        onClicked: toggleTimer()
-                    }
-
-                    DankButton {
-                        text: "Reset"
-                        iconName: "refresh"
-                        backgroundColor: Theme.surfaceContainerHigh
-                        textColor: Theme.surfaceText
-                        onClicked: resetTimer()
-                    }
-                }
-
-                Row {
-                    spacing: Theme.spacingS
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.isReady
 
                     StyledText {
-                        text: "Custom (minutes):"
-                        color: Theme.surfaceText
-                        anchors.verticalCenter: parent.verticalCenter
+                        text: formatTime(globalRemainingSeconds.value)
+                        font.pixelSize: 48
+                        isMonospace: true
+                        font.weight: Font.Bold
+                        color: {
+                            if (globalIsRunning.value) return Theme.primary
+                            if (root.isPaused) return Theme.warning
+                            if (root.isFinished) return Theme.error
+                            return Theme.surfaceText
+                        }
+                        anchors.horizontalCenter: parent.horizontalCenter
                     }
 
-                    TextField {
-                        id: customInput
-                        width: 80
-                        color: Theme.surfaceText
-                        Component.onCompleted: {
-                            if (root.isReady) {
-                                customInput.forceActiveFocus();
+                    Grid {
+                        columns: 3
+                        spacing: Theme.spacingS
+                        horizontalItemAlignment: Grid.AlignHCenter
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: root.isReady
+
+                        Repeater {
+                            model: root.presets
+                            delegate: DankButton {
+                                text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                                backgroundColor: Theme.primary
+                                textColor: Theme.onPrimary
+                                onClicked: setTimer(modelData)
                             }
                         }
-                        background: Rectangle {
-                            radius: Theme.cornerRadiusSmall
-                            color: Theme.surfaceContainer
-                            border.color: Theme.outline
+                    }
+
+                    Row {
+                        spacing: Theme.spacingM
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: !root.isReady
+
+                        DankButton {
+                            text: globalIsRunning.value ? "Pause" : (root.isPaused ? "Resume" : "Start")
+                            iconName: globalIsRunning.value ? "pause" : "play_arrow"
+                            backgroundColor: globalIsRunning.value ? Theme.error : (root.isPaused ? Theme.warning : Theme.primary)
+                            textColor: globalIsRunning.value ? Theme.onError : (root.isPaused ? Theme.onSurface : Theme.onPrimary)
+                            visible: !root.isFinished
+                            onClicked: toggleTimer()
                         }
-                        onEditingFinished: {
-                            if (isValidInput(text)) {
-                                setTimer(parseInt(text))
-                                text = ""
+
+                        DankButton {
+                            text: "Reset"
+                            iconName: "refresh"
+                            backgroundColor: Theme.surfaceContainerHigh
+                            textColor: Theme.surfaceText
+                            onClicked: resetTimer()
+                        }
+                    }
+
+                    Row {
+                        spacing: Theme.spacingS
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        visible: root.isReady
+
+                        StyledText {
+                            text: "Custom (minutes):"
+                            color: Theme.surfaceText
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        TextField {
+                            id: customInput
+                            width: 80
+                            color: Theme.surfaceText
+                            focus: true
+                            background: Rectangle {
+                                radius: Theme.cornerRadiusSmall
+                                color: Theme.surfaceContainer
+                                border.color: Theme.outline
+                            }
+                            onEditingFinished: {
+                                if (isValidInput(text)) {
+                                    setTimer(parseInt(text))
+                                    text = ""
+                                }
+                            }
+                        }
+
+                        DankButton {
+                            text: "Set"
+                            backgroundColor: Theme.primary
+                            textColor: Theme.onPrimary
+                            enabled: isValidInput(customInput.text)
+                            onClicked: {
+                                setTimer(parseInt(customInput.text))
+                                customInput.text = ""
                             }
                         }
                     }
 
-                    DankButton {
-                        text: "Set"
-                        backgroundColor: Theme.primary
-                        textColor: Theme.onPrimary
-                        enabled: isValidInput(customInput.text)
-                        onClicked: {
-                            setTimer(parseInt(customInput.text))
-                            customInput.text = ""
-                        }
+                    StyledText {
+                        text: "Hint: Right-click the bar icon to pause/resume."
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        horizontalAlignment: Text.AlignHCenter
+                        width: parent.width
+                        visible: root.showHints
                     }
-                }
-
-                StyledText {
-                    text: "Hint: Right-click the bar icon to pause/resume."
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceVariantText
-                    horizontalAlignment: Text.AlignHCenter
-                    width: parent.width
-                    visible: root.showHints
                 }
             }
         }
