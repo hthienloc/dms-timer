@@ -335,7 +335,7 @@ PluginComponent {
                     }
 
                     StyledText {
-                        text: "Hint: [Enter] to reset. Right-click bar icon to start/pause."
+                        text: "Hint: Right-click bar icon to start/pause. [Enter] to reset."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
