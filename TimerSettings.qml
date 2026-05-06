@@ -75,7 +75,7 @@ PluginSettings {
                     { label: "Stay at Finished", value: "stay" },
                     { label: "Reset to Ready", value: "reset" }
                 ]
-                defaultValue: "stay"
+                defaultValue: "reset"
             }
 
             SelectionSetting {
