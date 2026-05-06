@@ -297,10 +297,18 @@ PluginComponent {
                         }
                     }
                 }
+
+                StyledText {
+                    text: "Hint: Right-click the bar icon to pause/resume."
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceVariantText
+                    horizontalAlignment: Text.AlignHCenter
+                    width: parent.width
+                }
             }
         }
     }
 
     popoutWidth: 400
-    popoutHeight: 350
+    popoutHeight: 380
 }
