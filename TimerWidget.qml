@@ -195,6 +195,8 @@ PluginComponent {
         }
     }
 
+    property var manualInputInput: null
+
     popoutContent: Component {
         FocusScope {
             id: contentFocusScope
@@ -208,7 +210,7 @@ PluginComponent {
                 target: parentPopout
                 function onOpened() {
                     if (root.isReady) {
-                        Qt.callLater(() => customInput.forceActiveFocus());
+                        if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
                     } else {
                         contentFocusScope.forceActiveFocus();
                     }
@@ -235,11 +237,8 @@ PluginComponent {
                         if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                             if (!root.isReady) {
                                 root.toggleTimer();
-                            } else if (isValidInput(customInput.text)) {
-                                setTimer(parseInt(customInput.text));
-                                customInput.text = "";
+                                event.accepted = true;
                             }
-                            event.accepted = true;
                         }
                     }
 
@@ -309,17 +308,18 @@ PluginComponent {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        TextField {
+                        DankTextField {
                             id: customInput
-                            width: 80
-                            color: Theme.surfaceText
-                            focus: true
-                            background: Rectangle {
-                                radius: Theme.cornerRadiusSmall
-                                color: Theme.surfaceContainer
-                                border.color: Theme.outline
+                            width: 100
+                            placeholderText: "Mins..."
+                            showClearButton: true
+                            Component.onCompleted: {
+                                root.manualInputInput = customInput;
+                                if (root.isReady) {
+                                    Qt.callLater(() => customInput.forceActiveFocus());
+                                }
                             }
-                            onEditingFinished: {
+                            onAccepted: {
                                 if (isValidInput(text)) {
                                     setTimer(parseInt(text))
                                     text = ""
@@ -340,7 +340,7 @@ PluginComponent {
                     }
 
                     StyledText {
-                        text: "Hint: [Enter] to start/pause. Right-click bar icon to toggle."
+                        text: "Hint: [Enter] or Right-click bar icon to start/pause."
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
