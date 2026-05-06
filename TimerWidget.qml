@@ -340,7 +340,7 @@ PluginComponent {
                         color: Theme.surfaceVariantText
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width
-                        visible: root.showHints
+                        visible: root.showHints && !root.isReady
                     }
                 }
             }
