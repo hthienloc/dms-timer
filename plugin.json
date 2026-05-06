@@ -6,6 +6,13 @@
     "license": "GPL-3.0",
     "author": "Loc Huynh",
     "icon": "timer",
+    "type": "widget",
+    "capabilities": ["dankbar-widget"],
     "component": "./TimerWidget.qml",
+    "settings": "./TimerSettings.qml",
+    "permissions": [
+        "settings_read",
+        "settings_write"
+    ],
     "screenshot": "https://raw.githubusercontent.com/hthienloc/dms-timer/master/screenshot.png"
 }

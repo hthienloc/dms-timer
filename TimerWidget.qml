@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Controls
+import Quickshell
+import Quickshell.Io
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -26,6 +28,19 @@ PluginComponent {
         defaultValue: 0
     }
 
+    readonly property var presets: {
+        const raw = pluginData.presets || "5, 10, 15, 20, 25, 30, 45, 60, 120"
+        return raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
+    }
+
+    readonly property string soundPath: pluginData.soundPath || ""
+    readonly property bool useSystemNotificationSound: pluginData.useSystemNotificationSound ?? true
+    readonly property bool showNotification: pluginData.showNotification ?? true
+    readonly property string notificationTitle: pluginData.notificationTitle || "Timer"
+    readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
+    readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
+    readonly property string displayFormat: pluginData.displayFormat || "full"
+
     Timer {
         id: timer
         interval: 1000
@@ -36,13 +51,24 @@ PluginComponent {
             globalRemainingSeconds.set(newVal)
             if (newVal === 0) {
                 globalIsRunning.set(false)
-                Proc.runCommand(
-                    "timer-notify",
-                    ["notify-send", "-i", "appointment-soon", "-u", "normal", "Timer", "Timeout!"],
-                    null,
-                    0
-                )
-                if (AudioService.soundsAvailable) {
+                
+                if (root.showNotification) {
+                    Proc.runCommand(
+                        "timer-notify",
+                        ["notify-send", "-i", "appointment-soon", "-u", "normal", root.notificationTitle, root.notificationBody],
+                        null,
+                        0
+                    )
+                }
+
+                if (root.soundPath !== "") {
+                    Proc.runCommand(
+                        "timer-sound",
+                        ["paplay", "--property=media.role=event", root.soundPath],
+                        null,
+                        0
+                    )
+                } else if (root.useSystemNotificationSound && AudioService.soundsAvailable) {
                     AudioService.playCriticalNotificationSound()
                 } else {
                     Proc.runCommand(
@@ -53,6 +79,10 @@ PluginComponent {
                         0
                     )
                 }
+
+                if (root.timeoutBehavior === "reset") {
+                    root.resetTimer()
+                }
             }
         }
     }
@@ -62,6 +92,21 @@ PluginComponent {
         const minutes = Math.floor((totalSeconds % 3600) / 60)
         const seconds = totalSeconds % 60
 
+        if (root.displayFormat === "minimal") {
+            if (hours > 0) return hours + "h " + minutes + "m"
+            if (minutes > 0) return minutes + "m " + seconds + "s"
+            return seconds + "s"
+        }
+
+        if (root.displayFormat === "compact") {
+            let res = ""
+            if (hours > 0) res += hours + "h "
+            if (minutes > 0 || hours > 0) res += minutes + "m "
+            res += seconds + "s"
+            return res.trim()
+        }
+
+        // Default: Full format (00:00:00)
         let result = ""
         if (hours > 0)
             result += hours.toString().padStart(2, '0') + ":"
@@ -160,6 +205,30 @@ PluginComponent {
             }
             showCloseButton: true
 
+            headerActions: Component {
+                DankIcon {
+                    name: "settings"
+                    size: Theme.iconSize - 4
+                    color: settingsArea.containsMouse ? Theme.primary : Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    MouseArea {
+                        id: settingsArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            Proc.runCommand(
+                                "dms-settings",
+                                ["qs", "-c", "dms", "ipc", "call", "settings", "open"],
+                                null,
+                                0
+                            )
+                        }
+                    }
+                }
+            }
+
             Column {
                 width: parent.width
                 spacing: Theme.spacingL
@@ -186,7 +255,7 @@ PluginComponent {
                     visible: root.isReady
 
                     Repeater {
-                        model: [5, 10, 15, 20, 25, 30, 45, 60, 120]
+                        model: root.presets
                         delegate: DankButton {
                             text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
                             backgroundColor: Theme.primary
