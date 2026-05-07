@@ -2,7 +2,7 @@
 
 A feature-rich countdown timer plugin for [Dank Material Shell](https://github.com/AvengeMedia/DankMaterialShell).
 
-![Screenshot](screenshot.png)
+<img src="screenshot.png" width="300" alt="Screenshot">
 
 ## Installation
 
