@@ -223,13 +223,7 @@ PluginComponent {
                 id: mainContent
                 width: parent.width
                 headerText: "Timer"
-                detailsText: {
-                    if (globalIsRunning.value) return "Running..."
-                    if (root.isPaused) return "Paused"
-                    if (root.isFinished) return "Finished!"
-                    return "Ready"
-                }
-                showCloseButton: false
+                showCloseButton: true
 
                 Column {
                     width: parent.width
@@ -245,38 +239,133 @@ PluginComponent {
                         }
                     }
 
-                    StyledText {
-                        text: formatTime(globalRemainingSeconds.value)
-                        font.pixelSize: 48
-                        isMonospace: true
-                        font.weight: Font.Bold
+                    // --- 1. Dynamic Status Card ---
+                    StyledRect {
+                        width: parent.width
+                        height: 140
+                        radius: Theme.cornerRadius
                         color: {
-                            if (globalIsRunning.value) return Theme.primary
-                            if (root.isPaused) return Theme.warning
-                            if (root.isFinished) return Theme.error
-                            return Theme.surfaceText
+                            if (globalIsRunning.value) return Theme.primaryContainer
+                            if (root.isPaused) return Theme.warningContainer || Theme.surfaceContainerHigh
+                            if (root.isFinished) return Theme.errorContainer || Theme.surfaceContainerHigh
+                            return Theme.surfaceContainerLow
                         }
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
+                        clip: true
 
-                    Grid {
-                        columns: 3
-                        spacing: Theme.spacingS
-                        horizontalItemAlignment: Grid.AlignHCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        visible: root.isReady
+                        // Gradient overlay for depth
+                        Rectangle {
+                            anchors.fill: parent
+                            gradient: Gradient {
+                                GradientStop { position: 0.0; color: "transparent" }
+                                GradientStop { position: 1.0; color: Qt.rgba(0,0,0, 0.05) }
+                            }
+                        }
 
-                        Repeater {
-                            model: root.presets
-                            delegate: DankButton {
-                                text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                                backgroundColor: Theme.primary
-                                textColor: Theme.onPrimary
-                                onClicked: setTimer(modelData)
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: Theme.spacingXS
+
+                            StyledText {
+                                text: {
+                                    if (globalIsRunning.value) return "RUNNING"
+                                    if (root.isPaused) return "PAUSED"
+                                    if (root.isFinished) return "FINISHED"
+                                    return "READY"
+                                }
+                                font.pixelSize: 12
+                                font.bold: true
+                                color: {
+                                    if (globalIsRunning.value) return Theme.primary
+                                    if (root.isPaused) return Theme.warning
+                                    if (root.isFinished) return Theme.error
+                                    return Theme.surfaceText
+                                }
+                                opacity: 0.8
+                                anchors.horizontalCenter: parent.horizontalCenter
+                            }
+
+                            StyledText {
+                                text: formatTime(globalRemainingSeconds.value)
+                                font.pixelSize: 64
+                                isMonospace: true
+                                font.weight: Font.Bold
+                                color: {
+                                    if (globalIsRunning.value) return Theme.onPrimaryContainer
+                                    if (root.isPaused || root.isFinished) return Theme.onSurfaceVariant
+                                    return Theme.surfaceText
+                                }
+                                anchors.horizontalCenter: parent.horizontalCenter
                             }
                         }
                     }
 
+                    // --- 2. Setup Section (Presets & Input) ---
+                    Column {
+                        width: parent.width
+                        spacing: Theme.spacingM
+                        visible: root.isReady
+
+                        StyledText {
+                            text: "Select a preset or enter minutes"
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.surfaceVariantText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+
+                        Grid {
+                            columns: 3
+                            spacing: Theme.spacingS
+                            horizontalItemAlignment: Grid.AlignHCenter
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            Repeater {
+                                model: root.presets
+                                delegate: DankButton {
+                                    text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                                    backgroundColor: Theme.primary
+                                    textColor: Theme.onPrimary
+                                    onClicked: setTimer(modelData)
+                                }
+                            }
+                        }
+
+                        Row {
+                            spacing: Theme.spacingS
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            DankTextField {
+                                id: customInput
+                                width: 120
+                                placeholderText: "Manual mins..."
+                                showClearButton: true
+                                Component.onCompleted: {
+                                    root.manualInputInput = customInput;
+                                    if (root.isReady) {
+                                        Qt.callLater(() => customInput.forceActiveFocus());
+                                    }
+                                }
+                                onAccepted: {
+                                    if (isValidInput(text)) {
+                                        setTimer(parseInt(text))
+                                        text = ""
+                                    }
+                                }
+                            }
+
+                            DankButton {
+                                text: "Set"
+                                backgroundColor: Theme.primary
+                                textColor: Theme.onPrimary
+                                enabled: isValidInput(customInput.text)
+                                onClicked: {
+                                    setTimer(parseInt(customInput.text))
+                                    customInput.text = ""
+                                }
+                            }
+                        }
+                    }
+
+                    // --- 3. Control Section ---
                     Row {
                         spacing: Theme.spacingM
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -300,49 +389,25 @@ PluginComponent {
                         }
                     }
 
-                    Row {
-                        spacing: Theme.spacingS
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        visible: root.isReady
-
-                        DankTextField {
-                            id: customInput
-                            width: 80
-                            placeholderText: "Mins..."
-                            showClearButton: true
-                            Component.onCompleted: {
-                                root.manualInputInput = customInput;
-                                if (root.isReady) {
-                                    Qt.callLater(() => customInput.forceActiveFocus());
-                                }
-                            }
-                            onAccepted: {
-                                if (isValidInput(text)) {
-                                    setTimer(parseInt(text))
-                                    text = ""
-                                }
-                            }
-                        }
-
-                        DankButton {
-                            text: "Set"
-                            backgroundColor: Theme.primary
-                            textColor: Theme.onPrimary
-                            enabled: isValidInput(customInput.text)
-                            onClicked: {
-                                setTimer(parseInt(customInput.text))
-                                customInput.text = ""
-                            }
-                        }
-                    }
-
-                    StyledText {
-                        text: "Hint: Right-click bar icon to start/pause. [Enter] to reset."
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        horizontalAlignment: Text.AlignHCenter
+                    // --- 4. Footer Tip ---
+                    StyledRect {
                         width: parent.width
+                        height: 40
+                        radius: Theme.cornerRadius
+                        color: Theme.surfaceContainerLow
                         visible: root.showHints && !root.isReady
+                        
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: Theme.spacingS
+                            DankIcon { name: "info"; size: 16; color: Theme.surfaceText; opacity: 0.6 }
+                            StyledText {
+                                text: "Right-click bar icon to pause. [Enter] to reset."
+                                font.pixelSize: 10
+                                color: Theme.surfaceText
+                                opacity: 0.6
+                            }
+                        }
                     }
                 }
             }
