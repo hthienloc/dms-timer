@@ -208,6 +208,24 @@ PluginComponent {
 
             property var parentPopout: null
 
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                    if (!root.isReady && !customInput.focus) {
+                        root.resetTimer();
+                        event.accepted = true;
+                    }
+                }
+            }
+
+            Connections {
+                target: root
+                function onIsReadyChanged() {
+                    if (!root.isReady) {
+                        contentFocusScope.forceActiveFocus();
+                    }
+                }
+            }
+
             Connections {
                 target: parentPopout
                 function onOpened() {
@@ -229,15 +247,6 @@ PluginComponent {
                     width: parent.width
                     spacing: Theme.spacingL
                     focus: true
-
-                    Keys.onPressed: (event) => {
-                        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                            if (!root.isReady && !customInput.getActiveFocus()) {
-                                root.resetTimer();
-                                event.accepted = true;
-                            }
-                        }
-                    }
 
                     // --- 1. Dynamic Status Card ---
                     StyledRect {
