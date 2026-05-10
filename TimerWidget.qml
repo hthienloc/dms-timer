@@ -289,11 +289,7 @@ PluginComponent {
                                 font.pixelSize: 64
                                 isMonospace: true
                                 font.weight: Font.Bold
-                                color: {
-                                    if (globalIsRunning.value) return Theme.onPrimaryContainer
-                                    if (root.isPaused || root.isFinished) return Theme.onSurfaceVariant
-                                    return Theme.surfaceText
-                                }
+                                color: Theme.surfaceText
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                         }
