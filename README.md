@@ -6,7 +6,9 @@ Countdown timer with presets and notifications.
 
 ## Install
 
-[Install Now](dms://plugin/install/timer)
+```
+dms://plugin/install/timer
+```
 
 Or manually:
 ```bash
