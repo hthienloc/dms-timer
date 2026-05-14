@@ -17,7 +17,6 @@ PluginSettings {
         color: Theme.surfaceText
     }
 
-    // --- Presets Section ---
     StyledRect {
         width: parent.width
         height: presetsColumn.implicitHeight + Theme.spacingL * 2
@@ -55,7 +54,6 @@ PluginSettings {
         }
     }
 
-    // --- Behavior & Display Section ---
     StyledRect {
         width: parent.width
         height: behaviorColumn.implicitHeight + Theme.spacingL * 2
@@ -108,7 +106,6 @@ PluginSettings {
         }
     }
 
-    // --- Notifications Section ---
     StyledRect {
         width: parent.width
         height: notificationColumn.implicitHeight + Theme.spacingL * 2
@@ -153,7 +150,6 @@ PluginSettings {
         }
     }
 
-    // --- Sound Section ---
     StyledRect {
         width: parent.width
         height: soundColumn.implicitHeight + Theme.spacingL * 2
