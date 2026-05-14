@@ -211,20 +211,26 @@ PluginComponent {
     property var manualInputInput: null
 
     popoutContent: Component {
-        FocusScope {
-            id: contentFocusScope
+        PopoutComponent {
+            id: mainContent
             width: parent ? parent.width : 0
-            implicitHeight: mainContent.implicitHeight
+            headerText: "Timer"
+            showCloseButton: true
             focus: true
 
             property var parentPopout: null
+            onParentPopoutChanged: root.activePopoutReference = parentPopout
 
-            Keys.onPressed: (event) => {
-                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                    if (!root.isReady && !customInput.focus) {
-                        root.resetTimer();
-                        event.accepted = true;
-                    }
+            Connections {
+                target: parentPopout
+                function onOpened() {
+                    Qt.callLater(() => {
+                        if (root.isReady) {
+                            if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
+                        } else {
+                            mainColumn.forceActiveFocus();
+                        }
+                    });
                 }
             }
 
@@ -232,32 +238,25 @@ PluginComponent {
                 target: root
                 function onIsReadyChanged() {
                     if (!root.isReady) {
-                        contentFocusScope.forceActiveFocus();
+                        mainColumn.forceActiveFocus();
                     }
                 }
             }
 
-            Connections {
-                target: parentPopout
-                function onOpened() {
-                    if (root.isReady) {
-                        if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
-                    } else {
-                        contentFocusScope.forceActiveFocus();
-                    }
-                }
-            }
-
-            PopoutComponent {
-                id: mainContent
+            Column {
+                id: mainColumn
                 width: parent.width
-                headerText: "Timer"
-                showCloseButton: true
+                spacing: Theme.spacingL
+                focus: true
 
-                Column {
-                    width: parent.width
-                    spacing: Theme.spacingL
-                    focus: true
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                        if (!root.isReady && !customInput.focus) {
+                            root.resetTimer();
+                            event.accepted = true;
+                        }
+                    }
+                }
 
                     // --- 1. Dynamic Status Card ---
                     StyledRect {
@@ -426,7 +425,6 @@ PluginComponent {
                         }
                     }
                 }
-            }
         }
     }
 
