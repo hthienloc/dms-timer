@@ -150,7 +150,18 @@ PluginComponent {
         return Theme.surfaceText
     }
 
-    pillRightClickAction: () => { toggleTimer() }
+    readonly property int quickStartMinutes: {
+        const val = parseInt(pluginData.quickStartMinutes)
+        return (!isNaN(val) && val > 0) ? val : 25
+    }
+
+    pillRightClickAction: () => {
+        if (root.isReady) {
+            root.setTimer(root.quickStartMinutes)
+        } else {
+            root.toggleTimer()
+        }
+    }
 
     horizontalBarPill: Component {
         Row {

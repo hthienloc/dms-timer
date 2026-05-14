@@ -44,6 +44,14 @@ PluginSettings {
                 placeholder: "5, 10, 15, 20, 25, 30, 45, 60, 120"
                 defaultValue: "5, 10, 15, 20, 25, 30, 45, 60, 120"
             }
+
+            StringSetting {
+                settingKey: "quickStartMinutes"
+                label: "Right-Click Quick Start (minutes)"
+                description: "The duration in minutes to start when right-clicking the icon in Ready state."
+                placeholder: "25"
+                defaultValue: "25"
+            }
         }
     }
 
