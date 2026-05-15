@@ -261,59 +261,18 @@ PluginComponent {
                 }
 
                     // --- 1. Dynamic Status Card ---
-                    StyledRect {
-                        width: parent.width
-                        height: 140
-                        radius: Theme.cornerRadius
-                        color: {
-                            if (globalIsRunning.value) return Theme.primaryContainer
-                            if (root.isPaused) return Theme.warningContainer || Theme.surfaceContainerHigh
-                            if (root.isFinished) return Theme.errorContainer || Theme.surfaceContainerHigh
-                            return Theme.surfaceContainerLow
+                    StatusDisplay {
+                        id: statusDisplay
+                        iconName: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
+                        title: {
+                            if (globalIsRunning.value) return "RUNNING"
+                            if (root.isPaused) return "PAUSED"
+                            if (root.isFinished) return "FINISHED"
+                            return "READY"
                         }
-                        clip: true
-
-                        // Gradient overlay for depth
-                        Rectangle {
-                            anchors.fill: parent
-                            gradient: Gradient {
-                                GradientStop { position: 0.0; color: "transparent" }
-                                GradientStop { position: 1.0; color: Qt.rgba(0,0,0, 0.05) }
-                            }
-                        }
-
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: Theme.spacingXS
-
-                            StyledText {
-                                text: {
-                                    if (globalIsRunning.value) return "RUNNING"
-                                    if (root.isPaused) return "PAUSED"
-                                    if (root.isFinished) return "FINISHED"
-                                    return "READY"
-                                }
-                                font.pixelSize: 12
-                                font.bold: true
-                                color: {
-                                    if (globalIsRunning.value) return Theme.primary
-                                    if (root.isPaused) return Theme.warning
-                                    if (root.isFinished) return Theme.error
-                                    return Theme.surfaceText
-                                }
-                                opacity: 0.8
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
-
-                            StyledText {
-                                text: formatTime(globalRemainingSeconds.value)
-                                font.pixelSize: 64
-                                isMonospace: true
-                                font.weight: Font.Bold
-                                color: Theme.surfaceText
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
-                        }
+                        subtitle: formatTime(globalRemainingSeconds.value)
+                        active: globalIsRunning.value
+                        progress: root.isReady ? -1 : (globalRemainingSeconds.value / globalTotalSeconds.value)
                     }
 
                     // --- 2. Setup Section (Presets & Input) ---
@@ -329,18 +288,18 @@ PluginComponent {
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
 
-                        Grid {
-                            columns: 3
+                        Flow {
+                            width: parent.width
                             spacing: Theme.spacingS
-                            horizontalItemAlignment: Grid.AlignHCenter
-                            anchors.horizontalCenter: parent.horizontalCenter
-
+                            
                             Repeater {
                                 model: root.presets
-                                delegate: DankButton {
-                                    text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                                    backgroundColor: Theme.primary
-                                    textColor: Theme.onPrimary
+                                delegate: ActionTile {
+                                    width: (parent.width - Theme.spacingS * 2) / 3
+                                    height: 70
+                                    iconName: "timer"
+                                    title: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                                    active: false
                                     onClicked: setTimer(modelData)
                                 }
                             }
