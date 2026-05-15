@@ -21,8 +21,8 @@ PluginSettings {
             settingKey: "presets"
             label: "Quick Presets (minutes)"
             description: "Comma-separated list of minutes for quick start buttons."
-            placeholder: "5, 10, 15, 20, 25, 30, 45, 60, 120"
-            defaultValue: "5, 10, 15, 20, 25, 30, 45, 60, 120"
+            placeholder: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
+            defaultValue: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
         }
 
         StringSetting {

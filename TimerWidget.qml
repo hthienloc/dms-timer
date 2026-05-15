@@ -31,7 +31,7 @@ PluginComponent {
     }
 
     readonly property var presets: {
-        const raw = pluginData.presets || "5, 10, 15, 20, 25, 30, 45, 60, 120"
+        const raw = pluginData.presets || "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
         return raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))
     }
 
@@ -214,6 +214,7 @@ PluginComponent {
         }
     }
 
+    property var activePopoutReference: null
     property var manualInputInput: null
 
     popoutContent: Component {
@@ -264,19 +265,55 @@ PluginComponent {
                     }
                 }
 
-                    StatusDisplay {
-                        id: statusDisplay
-                        large: true
-                        title: {
-                            if (globalIsRunning.value) return "RUNNING"
-                            if (root.isPaused) return "PAUSED"
-                            if (root.isFinished) return "FINISHED"
-                            return "READY"
+                // Restored old style: Hardcoded centered layout for perfect alignment
+                Rectangle {
+                    width: parent.width
+                    height: 150
+                    radius: Theme.cornerRadius
+                    color: globalIsRunning.value ? Theme.primary : Theme.surfaceContainerHigh
+                    
+                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    Column {
+                        anchors.centerIn: parent
+                        spacing: 2
+                        width: parent.width // Ensure children have a defined width to anchor to
+
+                        StyledText {
+                            text: {
+                                if (globalIsRunning.value) return "RUNNING"
+                                if (root.isPaused) return "PAUSED"
+                                if (root.isFinished) return "FINISHED"
+                                return "READY"
+                            }
+                            font.pixelSize: 18
+                            font.weight: Font.Bold
+                            opacity: 0.8
+                            color: globalIsRunning.value ? Theme.onPrimary : Theme.surfaceText
+                            anchors.horizontalCenter: parent.horizontalCenter
                         }
-                        subtitle: formatTime(globalRemainingSeconds.value)
-                        active: globalIsRunning.value
-                        progress: root.isReady ? -1 : (globalRemainingSeconds.value / globalTotalSeconds.value)
+
+                        StyledText {
+                            text: formatTime(globalRemainingSeconds.value)
+                            font.pixelSize: 64
+                            font.weight: Font.Bold
+                            color: globalIsRunning.value ? Theme.onPrimary : Theme.surfaceText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            isMonospace: true
+                        }
                     }
+
+                    // Bottom progress bar
+                    Rectangle {
+                        anchors.bottom: parent.bottom
+                        width: parent.width * Math.max(0, Math.min(1, root.isReady ? 0 : (globalRemainingSeconds.value / globalTotalSeconds.value)))
+                        height: 4
+                        color: globalIsRunning.value ? Theme.onPrimary : Theme.primary
+                        visible: !root.isReady
+                        opacity: 0.8
+                        radius: 2
+                    }
+                }
 
                     Column {
                         width: parent.width
@@ -292,18 +329,32 @@ PluginComponent {
 
                         Flow {
                             width: parent.width
-                            spacing: Theme.spacingS
+                            spacing: 6
                             
                             Repeater {
                                 model: root.presets
-                                delegate: ActionTile {
-                                    width: (parent.width - Theme.spacingS * 2) / 3
-                                    height: 70
-                                    title: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                                    titleFontSize: 18
-                                    textColor: Theme.primary
-                                    active: false
-                                    onClicked: setTimer(modelData)
+                                delegate: Rectangle {
+                                    width: (parent.width - 18) / 4 // 18 = 6 * 3 (spacing)
+                                    height: 36
+                                    radius: Theme.cornerRadius
+                                    color: Theme.primary
+                                    
+                                    StyledText {
+                                        text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                                        font.pixelSize: 13
+                                        font.weight: Font.DemiBold
+                                        color: Theme.onPrimary
+                                        anchors.centerIn: parent
+                                    }
+                                    
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: setTimer(modelData)
+                                        
+                                        onPressed: parent.opacity = 0.7
+                                        onReleased: parent.opacity = 1.0
+                                    }
                                 }
                             }
                         }
@@ -385,5 +436,10 @@ PluginComponent {
     }
 
     popoutWidth: 360
-    popoutHeight: root.showHints ? 380 : 340
+    popoutHeight: {
+        const baseHeight = root.showHints ? 380 : 340
+        const presetRows = Math.ceil(root.presets.length / 4)
+        const extraRows = Math.max(0, presetRows - 3)
+        return baseHeight + (extraRows * 42)
+    }
 }
