@@ -260,7 +260,6 @@ PluginComponent {
                     }
                 }
 
-                    // --- 1. Dynamic Status Card ---
                     StatusDisplay {
                         id: statusDisplay
                         iconName: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
@@ -275,7 +274,6 @@ PluginComponent {
                         progress: root.isReady ? -1 : (globalRemainingSeconds.value / globalTotalSeconds.value)
                     }
 
-                    // --- 2. Setup Section (Presets & Input) ---
                     Column {
                         width: parent.width
                         spacing: Theme.spacingM
@@ -341,7 +339,6 @@ PluginComponent {
                         }
                     }
 
-                    // --- 3. Control Section ---
                     Row {
                         spacing: Theme.spacingM
                         anchors.horizontalCenter: parent.horizontalCenter
