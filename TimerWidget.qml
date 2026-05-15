@@ -300,6 +300,8 @@ PluginComponent {
                                     width: (parent.width - Theme.spacingS * 2) / 3
                                     height: 70
                                     title: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
+                                    titleFontSize: 18
+                                    textColor: Theme.primary
                                     active: false
                                     onClicked: setTimer(modelData)
                                 }
