@@ -35,18 +35,7 @@ PluginSettings {
     }
 
     SettingsCard {
-        SectionTitle { text: "Behavior & Display" }
-
-        SelectionSetting {
-            settingKey: "timeoutBehavior"
-            label: "When Finished"
-            description: "What to do when the timer reaches zero."
-            options: [
-                { label: "Stay at Finished", value: "stay" },
-                { label: "Reset to Ready", value: "reset" }
-            ]
-            defaultValue: "reset"
-        }
+        SectionTitle { text: "Display" }
 
         SelectionSetting {
             settingKey: "displayFormat"
@@ -60,12 +49,20 @@ PluginSettings {
             ]
             defaultValue: "full"
         }
+    }
 
-        ToggleSetting {
-            settingKey: "showHints"
-            label: "Show Hints"
-            description: "Display helpful usage tips and shortcuts at the bottom of the popout."
-            defaultValue: true
+    SettingsCard {
+        SectionTitle { text: "Notifications" }
+
+        SelectionSetting {
+            settingKey: "timeoutBehavior"
+            label: "When Finished"
+            description: "What to do when the timer reaches zero."
+            options: [
+                { label: "Stay at Finished", value: "stay" },
+                { label: "Reset to Ready", value: "reset" }
+            ]
+            defaultValue: "reset"
         }
 
         ToggleSetting {
@@ -107,6 +104,17 @@ PluginSettings {
             settingKey: "useSystemNotificationSound"
             label: "Use System Notification Sound"
             description: "Use system's critical notification sound if no path is set."
+            defaultValue: true
+        }
+    }
+
+    SettingsCard {
+        SectionTitle { text: "Behavior" }
+
+        ToggleSetting {
+            settingKey: "showHints"
+            label: "Show Hints"
+            description: "Display helpful usage tips and shortcuts at the bottom of the popout."
             defaultValue: true
         }
     }
