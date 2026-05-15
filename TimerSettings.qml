@@ -4,7 +4,7 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
-import "./components"
+import "../dms-common"
 
 PluginSettings {
     id: root
@@ -55,8 +55,7 @@ PluginSettings {
             options: [
                 { label: "00:00:00", value: "full" },
                 { label: "1h 5m 10s", value: "compact" },
-                { label: "5m 10s", value: "minimal" },
-                { label: "Icon Only", value: "icon" }
+                { label: "5m 10s", value: "minimal" }
             ]
             defaultValue: "full"
         }

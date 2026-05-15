@@ -6,7 +6,7 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
-import "./components"
+import "../dms-common"
 
 
 PluginComponent {
@@ -404,7 +404,7 @@ PluginComponent {
                             text: globalIsRunning.value ? "Pause" : (root.isPaused ? "Resume" : "Start")
                             iconName: globalIsRunning.value ? "pause" : "play_arrow"
                             backgroundColor: globalIsRunning.value ? Theme.error : (root.isPaused ? Theme.warning : Theme.primary)
-                            textColor: globalIsRunning.value ? Theme.onError : (root.isPaused ? Theme.onSurface : Theme.onPrimary)
+                            textColor: globalIsRunning.value ? Theme.onSurface : (root.isPaused ? Theme.onSurface : Theme.onPrimary)
                             visible: !root.isFinished
                             onClicked: toggleTimer()
                         }
