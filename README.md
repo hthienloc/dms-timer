@@ -39,4 +39,4 @@ git clone https://github.com/hthienloc/dms-timer ~/.config/DankMaterialShell/plu
 
 ## License
 
-GPL-3.0(https://github.com/hthienloc/dms-common) to be installed in the plugins directory.
+GPL-3.0
