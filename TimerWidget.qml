@@ -267,7 +267,6 @@ PluginComponent {
                     StatusDisplay {
                         id: statusDisplay
                         large: true
-                        iconName: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                         title: {
                             if (globalIsRunning.value) return "RUNNING"
                             if (root.isPaused) return "PAUSED"
@@ -300,7 +299,6 @@ PluginComponent {
                                 delegate: ActionTile {
                                     width: (parent.width - Theme.spacingS * 2) / 3
                                     height: 70
-                                    iconName: "timer"
                                     title: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
                                     active: false
                                     onClicked: setTimer(modelData)
