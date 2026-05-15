@@ -266,6 +266,7 @@ PluginComponent {
 
                     StatusDisplay {
                         id: statusDisplay
+                        large: true
                         iconName: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                         title: {
                             if (globalIsRunning.value) return "RUNNING"
