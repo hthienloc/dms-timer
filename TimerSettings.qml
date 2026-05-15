@@ -99,8 +99,8 @@ PluginSettings {
 
             ToggleSetting {
                 settingKey: "showHints"
-                label: "Show Accessibility Hints"
-                description: "Display helpful usage tips at the bottom of the popout."
+                label: "Show Hints"
+                description: "Display helpful usage tips and shortcuts at the bottom of the popout."
                 defaultValue: true
             }
         }

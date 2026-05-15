@@ -6,6 +6,8 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 import qs.Modules.Plugins
+import "./components"
+
 
 PluginComponent {
     id: root
@@ -404,24 +406,17 @@ PluginComponent {
                         }
                     }
 
-                    // --- 4. Footer Tip ---
-                    StyledRect {
+                    HintSection {
                         width: parent.width
-                        height: 40
-                        radius: Theme.cornerRadius
-                        color: Theme.surfaceContainerLow
-                        visible: root.showHints && !root.isReady
+                        showHints: root.showHints
                         
-                        Row {
-                            anchors.centerIn: parent
-                            spacing: Theme.spacingS
-                            DankIcon { name: "info"; size: 16; color: Theme.surfaceText; opacity: 0.6 }
-                            StyledText {
-                                text: "Right-click bar icon to pause. [Enter] to reset."
-                                font.pixelSize: 10
-                                color: Theme.surfaceText
-                                opacity: 0.6
-                            }
+                        HintItem {
+                            icon: "info"
+                            text: "Right-click bar icon to toggle (Pause/Resume/Quick Start)."
+                        }
+                        HintItem {
+                            icon: "keyboard"
+                            text: "[Enter] to reset when timer is active."
                         }
                     }
                 }
