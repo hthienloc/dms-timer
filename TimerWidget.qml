@@ -228,24 +228,19 @@ PluginComponent {
             property var parentPopout: null
             onParentPopoutChanged: root.activePopoutReference = parentPopout
 
-            Connections {
-                target: parentPopout
-                function onOpened() {
-                    Qt.callLater(() => {
-                        if (root.isReady) {
-                            if (root.manualInputInput) root.manualInputInput.forceActiveFocus();
-                        } else {
-                            mainColumn.forceActiveFocus();
-                        }
-                    });
-                }
-            }
-
-            Connections {
-                target: root
-                function onIsReadyChanged() {
-                    if (!root.isReady) {
+            PluginShortcut {
+                parentPopout: mainContent.parentPopout
+                onOpened: () => {
+                    if (root.isReady && root.manualInputInput) {
+                        root.manualInputInput.forceActiveFocus();
+                    } else {
                         mainColumn.forceActiveFocus();
+                    }
+                }
+                onSpacePressed: () => root.toggleTimer()
+                onEnterPressed: () => {
+                    if (!root.isReady && !customInput.focus) {
+                        root.resetTimer();
                     }
                 }
             }
@@ -254,16 +249,6 @@ PluginComponent {
                 id: mainColumn
                 width: parent.width
                 spacing: Theme.spacingL
-                focus: true
-
-                Keys.onPressed: (event) => {
-                    if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                        if (!root.isReady && !customInput.focus) {
-                            root.resetTimer();
-                            event.accepted = true;
-                        }
-                    }
-                }
 
                 // Restored old style: Hardcoded centered layout for perfect alignment
                 Rectangle {
@@ -428,7 +413,7 @@ PluginComponent {
                         }
                         HintItem {
                             icon: "keyboard"
-                            text: "[Enter] to reset when timer is active."
+                            text: "[Space] to Pause/Resume, [Enter] to Reset."
                         }
                     }
                 }
