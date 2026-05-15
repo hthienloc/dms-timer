@@ -39,6 +39,10 @@ PluginComponent {
     readonly property bool useSystemNotificationSound: pluginData.useSystemNotificationSound ?? true
     readonly property bool showNotification: pluginData.showNotification ?? true
     readonly property string notificationTitle: pluginData.notificationTitle || "Timer"
+    readonly property int buttonHeight: Theme.iconSizeLarge + Theme.spacingS
+    readonly property int padding: Theme.spacingS
+    readonly property int spacing: Theme.spacingS
+    readonly property int fontSize: Theme.fontSizeMedium
     readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
     readonly property string displayFormat: pluginData.displayFormat || "full"
