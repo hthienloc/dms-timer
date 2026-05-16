@@ -43,8 +43,10 @@ GPL-3.0
 
 ## Roadmap / TODO
 
-- [ ] Support for multiple concurrent timers with custom labels.
-- [ ] Looping/Repeating timer mode (ideal for interval training or pomodoro).
-- [ ] Media player integration: automatically pause music when a timer finishes.
-- [ ] Visual "Flash" notification on the bar when the timer is finished.
+- [ ] **Pomodoro Support**: Dedicated mode with automated work/break cycles and session tracking.
+- [ ] **Extended Precise Input**: Support for `HH:MM:SS` format in manual input for long-running tasks.
+- [ ] **Custom "When Done" Actions**: Execute shell commands or trigger system actions (Lock, Suspend) on timeout.
+- [ ] **Multi-Timer Manager**: Support for labeling and tracking multiple concurrent countdowns.
+- [ ] **External Control (IPC)**: API to start, pause, or reset timers via command line or external scripts.
+- [ ] **Improved Persistence**: Save active timer state to disk to survive session restarts.
 
