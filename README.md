@@ -40,3 +40,11 @@ git clone https://github.com/hthienloc/dms-timer ~/.config/DankMaterialShell/plu
 ## License
 
 GPL-3.0
+
+## Roadmap / TODO
+
+- [ ] Support for multiple concurrent timers with custom labels.
+- [ ] Looping/Repeating timer mode (ideal for interval training or pomodoro).
+- [ ] Media player integration: automatically pause music when a timer finishes.
+- [ ] Visual "Flash" notification on the bar when the timer is finished.
+
