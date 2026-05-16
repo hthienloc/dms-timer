@@ -14,7 +14,7 @@ Countdown timer with presets and notifications.
 git clone https://github.com/hthienloc/dms-common ~/.config/DankMaterialShell/plugins/dms-common
 
 # 2. Install this plugin
-dms://plugin/install/timer
+dms plugins install timer
 ```
 
 Or manually:
