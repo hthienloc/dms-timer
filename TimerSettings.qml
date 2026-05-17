@@ -1,13 +1,14 @@
+import "../dms-common"
 import QtQuick
 import QtQuick.Controls
 import qs.Common
+import qs.Modules.Plugins
 import qs.Services
 import qs.Widgets
-import qs.Modules.Plugins
-import "../dms-common"
 
 PluginSettings {
     id: root
+
     pluginId: "timer"
 
     PluginHeader {
@@ -15,7 +16,9 @@ PluginSettings {
     }
 
     SettingsCard {
-        SectionTitle { text: "Presets" }
+        SectionTitle {
+            text: "Presets"
+        }
 
         StringSetting {
             settingKey: "presets"
@@ -32,36 +35,76 @@ PluginSettings {
             placeholder: "25"
             defaultValue: "25"
         }
+
     }
 
     SettingsCard {
-        SectionTitle { text: "Display" }
+        SectionTitle {
+            text: "Display"
+        }
 
         SelectionSetting {
             settingKey: "displayFormat"
             label: "Display Format"
             description: "Choose how the time is formatted on the bar."
-            options: [
-                { label: "00:00:00", value: "full" },
-                { label: "1h 5m 10s", value: "compact" },
-                { label: "5m 10s", value: "minimal" },
-                { label: "Icon Only", value: "icon" }
-            ]
+            options: [{
+                "label": "00:00:00",
+                "value": "full"
+            }, {
+                "label": "1h 5m 10s",
+                "value": "compact"
+            }, {
+                "label": "5m 10s",
+                "value": "minimal"
+            }, {
+                "label": "Icon Only",
+                "value": "icon"
+            }]
             defaultValue: "full"
         }
+
+        ToggleSetting {
+            settingKey: "showPillIcon"
+            label: "Show Icon in Pill"
+            description: "Display status icon alongside the digits."
+            defaultValue: true
+        }
+
+        SelectionSetting {
+            settingKey: "progressStyle"
+            label: "Progress Style"
+            description: "Choose how to visualize timer progress on the bar."
+            options: [{
+                "label": "None",
+                "value": "none"
+            }, {
+                "label": "Subtle Underline",
+                "value": "underline"
+            }, {
+                "label": "Background Fill",
+                "value": "background"
+            }]
+            defaultValue: "none"
+        }
+
     }
 
     SettingsCard {
-        SectionTitle { text: "Notifications" }
+        SectionTitle {
+            text: "Notifications"
+        }
 
         SelectionSetting {
             settingKey: "timeoutBehavior"
             label: "When Finished"
             description: "What to do when the timer reaches zero."
-            options: [
-                { label: "Stay at Finished", value: "stay" },
-                { label: "Reset to Ready", value: "reset" }
-            ]
+            options: [{
+                "label": "Stay at Finished",
+                "value": "stay"
+            }, {
+                "label": "Reset to Ready",
+                "value": "reset"
+            }]
             defaultValue: "reset"
         }
 
@@ -87,10 +130,13 @@ PluginSettings {
             defaultValue: "Timeout!"
             visible: pluginData.showNotification ?? true
         }
+
     }
 
     SettingsCard {
-        SectionTitle { text: "Sound" }
+        SectionTitle {
+            text: "Sound"
+        }
 
         StringSetting {
             settingKey: "soundPath"
@@ -99,17 +145,20 @@ PluginSettings {
             placeholder: "/usr/share/sounds/freedesktop/stereo/complete.oga"
             defaultValue: ""
         }
-        
+
         ToggleSetting {
             settingKey: "useSystemNotificationSound"
             label: "Use System Notification Sound"
             description: "Use system's critical notification sound if no path is set."
             defaultValue: true
         }
+
     }
 
     SettingsCard {
-        SectionTitle { text: "Behavior" }
+        SectionTitle {
+            text: "Behavior"
+        }
 
         ToggleSetting {
             settingKey: "showHints"
@@ -117,5 +166,7 @@ PluginSettings {
             description: "Display helpful usage tips and shortcuts at the bottom of the popout."
             defaultValue: true
         }
+
     }
+
 }

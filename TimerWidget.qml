@@ -30,6 +30,8 @@ PluginComponent {
     readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
     readonly property string displayFormat: pluginData.displayFormat || "full"
+    readonly property bool showPillIcon: pluginData.showPillIcon ?? true
+    readonly property string progressStyle: pluginData.progressStyle || "none"
     readonly property bool showHints: pluginData.showHints ?? true
     readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
     readonly property bool isPaused: !globalIsRunning.value && globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
@@ -182,13 +184,37 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Row {
-            spacing: root.displayFormat === "icon" ? 0 : Theme.spacingS
+            spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+
+            Rectangle {
+                id: bgProgress
+
+                Positioner.isIncluded: false
+                width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                height: parent.height
+                color: Theme.primary
+                opacity: 0.15
+                radius: Theme.cornerRadius
+                visible: root.progressStyle === "background" && !root.isReady && !root.isFinished
+            }
+
+            Rectangle {
+                id: underlineProgress
+
+                Positioner.isIncluded: false
+                width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                height: 2
+                anchors.bottom: parent.bottom
+                color: Theme.primary
+                visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
+            }
 
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                 size: Theme.iconSizeSmall
                 color: root.pillColor
                 anchors.verticalCenter: parent.verticalCenter
+                visible: root.showPillIcon || root.displayFormat === "icon"
             }
 
             StyledText {
@@ -206,13 +232,38 @@ PluginComponent {
 
     verticalBarPill: Component {
         Column {
-            spacing: root.displayFormat === "icon" ? 0 : Theme.spacingS
+            spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+
+            Rectangle {
+                id: bgProgressVertical
+
+                Positioner.isIncluded: false
+                width: parent.width
+                height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                anchors.bottom: parent.bottom
+                color: Theme.primary
+                opacity: 0.15
+                radius: Theme.cornerRadius
+                visible: root.progressStyle === "background" && !root.isReady && !root.isFinished
+            }
+
+            Rectangle {
+                id: underlineProgressVertical
+
+                Positioner.isIncluded: false
+                width: 2
+                height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                anchors.right: parent.right
+                color: Theme.primary
+                visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
+            }
 
             DankIcon {
                 name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                 size: Theme.iconSizeSmall
                 color: root.pillColor
                 anchors.horizontalCenter: parent.horizontalCenter
+                visible: root.showPillIcon || root.displayFormat === "icon"
             }
 
             StyledText {
