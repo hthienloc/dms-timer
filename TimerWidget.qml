@@ -276,7 +276,7 @@ PluginComponent {
                             model: root.presets
 
                             delegate: Rectangle {
-                                width: (parent.width - 18) / 4 // 18 = 6 * 3 (spacing)
+                                width: (parent.width - 18) / 4
                                 height: 36
                                 radius: Theme.cornerRadius
                                 color: Theme.primary
