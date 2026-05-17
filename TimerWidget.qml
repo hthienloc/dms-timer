@@ -200,10 +200,7 @@ PluginComponent {
 
                 width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 height: parent.height
-                color: Theme.primary
-                opacity: 0.15
-                radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
+                color: root.pillColor
             }
 
             Rectangle {
@@ -212,7 +209,7 @@ PluginComponent {
                 width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 height: 2
                 anchors.bottom: parent.bottom
-                color: Theme.primary
+                color: root.pillColor
                 visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
@@ -260,7 +257,7 @@ PluginComponent {
                         width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                         height: parent.height
                         radius: 3
-                        color: Theme.primary
+                        color: root.pillColor
                     }
 
                 }
@@ -328,7 +325,7 @@ PluginComponent {
                 width: parent.width
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.bottom: parent.bottom
-                color: Theme.primary
+                color: root.pillColor
                 opacity: 0.15
                 radius: Theme.cornerRadius
                 visible: root.progressStyle === "background" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
@@ -340,7 +337,7 @@ PluginComponent {
                 width: 2
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.right: parent.right
-                color: Theme.primary
+                color: root.pillColor
                 visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
@@ -387,7 +384,7 @@ PluginComponent {
                         height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                         anchors.bottom: parent.bottom
                         radius: 3
-                        color: Theme.primary
+                        color: root.pillColor
                     }
 
                 }
