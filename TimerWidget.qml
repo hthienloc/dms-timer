@@ -183,13 +183,13 @@ PluginComponent {
     }
 
     horizontalBarPill: Component {
-        Row {
-            spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+        Item {
+            implicitWidth: pillRow.implicitWidth
+            implicitHeight: pillRow.implicitHeight
 
             Rectangle {
                 id: bgProgress
 
-                Positioner.isIncluded: false
                 width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 height: parent.height
                 color: Theme.primary
@@ -201,7 +201,6 @@ PluginComponent {
             Rectangle {
                 id: underlineProgress
 
-                Positioner.isIncluded: false
                 width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 height: 2
                 anchors.bottom: parent.bottom
@@ -209,21 +208,28 @@ PluginComponent {
                 visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
             }
 
-            DankIcon {
-                name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
-                size: Theme.iconSizeSmall
-                color: root.pillColor
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.showPillIcon || root.displayFormat === "icon"
-            }
+            Row {
+                id: pillRow
 
-            StyledText {
-                text: formatTime(globalRemainingSeconds.value)
-                color: root.pillColor
-                font.pixelSize: Theme.fontSizeMedium
-                isMonospace: true
-                anchors.verticalCenter: parent.verticalCenter
-                visible: root.displayFormat !== "icon"
+                spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+
+                DankIcon {
+                    name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
+                    size: Theme.iconSizeSmall
+                    color: root.pillColor
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.showPillIcon || root.displayFormat === "icon"
+                }
+
+                StyledText {
+                    text: formatTime(globalRemainingSeconds.value)
+                    color: root.pillColor
+                    font.pixelSize: Theme.fontSizeMedium
+                    isMonospace: true
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: root.displayFormat !== "icon"
+                }
+
             }
 
         }
@@ -231,13 +237,13 @@ PluginComponent {
     }
 
     verticalBarPill: Component {
-        Column {
-            spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+        Item {
+            implicitWidth: pillColumn.implicitWidth
+            implicitHeight: pillColumn.implicitHeight
 
             Rectangle {
                 id: bgProgressVertical
 
-                Positioner.isIncluded: false
                 width: parent.width
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.bottom: parent.bottom
@@ -250,7 +256,6 @@ PluginComponent {
             Rectangle {
                 id: underlineProgressVertical
 
-                Positioner.isIncluded: false
                 width: 2
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.right: parent.right
@@ -258,22 +263,29 @@ PluginComponent {
                 visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
             }
 
-            DankIcon {
-                name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
-                size: Theme.iconSizeSmall
-                color: root.pillColor
-                anchors.horizontalCenter: parent.horizontalCenter
-                visible: root.showPillIcon || root.displayFormat === "icon"
-            }
+            Column {
+                id: pillColumn
 
-            StyledText {
-                text: formatTime(globalRemainingSeconds.value)
-                color: root.pillColor
-                font.pixelSize: Theme.fontSizeSmall
-                isMonospace: true
-                anchors.horizontalCenter: parent.horizontalCenter
-                rotation: 90
-                visible: root.displayFormat !== "icon"
+                spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+
+                DankIcon {
+                    name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
+                    size: Theme.iconSizeSmall
+                    color: root.pillColor
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.showPillIcon || root.displayFormat === "icon"
+                }
+
+                StyledText {
+                    text: formatTime(globalRemainingSeconds.value)
+                    color: root.pillColor
+                    font.pixelSize: Theme.fontSizeSmall
+                    isMonospace: true
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    rotation: 90
+                    visible: root.displayFormat !== "icon"
+                }
+
             }
 
         }
