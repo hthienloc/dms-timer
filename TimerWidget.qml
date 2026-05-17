@@ -31,7 +31,6 @@ PluginComponent {
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
     readonly property string displayFormat: pluginData.displayFormat || "full"
     readonly property bool showPillIcon: pluginData.showPillIcon ?? true
-    readonly property string progressStyle: pluginData.progressStyle || "none"
     // Derived helpers — icon/pulse modes are fixed layouts; others respect showPillIcon
     readonly property bool _pillHasIcon: displayFormat === "icon" || (showPillIcon && displayFormat !== "pulse")
     readonly property bool _pillIsIconOnly: displayFormat === "icon"
@@ -194,25 +193,6 @@ PluginComponent {
             implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitWidth
             implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitHeight
 
-            // ── Background / underline progress overlays (digit & progress modes) ──────
-            Rectangle {
-                id: bgProgress
-
-                width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                height: parent.height
-                color: root.pillColor
-            }
-
-            Rectangle {
-                id: underlineProgress
-
-                width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                height: 2
-                anchors.bottom: parent.bottom
-                color: root.pillColor
-                visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
-            }
-
             // ── Normal content row (icon / digits / inline progress bar) ─────────────
             Row {
                 id: pillRow
@@ -318,28 +298,6 @@ PluginComponent {
         Item {
             implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitWidth
             implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitHeight
-
-            Rectangle {
-                id: bgProgressVertical
-
-                width: parent.width
-                height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                anchors.bottom: parent.bottom
-                color: root.pillColor
-                opacity: 0.15
-                radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
-            }
-
-            Rectangle {
-                id: underlineProgressVertical
-
-                width: 2
-                height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                anchors.right: parent.right
-                color: root.pillColor
-                visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
-            }
 
             Column {
                 id: pillColumn

@@ -43,6 +43,13 @@ PluginSettings {
             text: "Display"
         }
 
+        ToggleSetting {
+            settingKey: "showPillIcon"
+            label: "Show Icon"
+            description: "Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes."
+            defaultValue: true
+        }
+
         SelectionSetting {
             settingKey: "displayFormat"
             label: "Display Content"
@@ -67,30 +74,6 @@ PluginSettings {
                 "value": "pulse"
             }]
             defaultValue: "full"
-        }
-
-        ToggleSetting {
-            settingKey: "showPillIcon"
-            label: "Show Icon"
-            description: "Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes."
-            defaultValue: true
-        }
-
-        SelectionSetting {
-            settingKey: "progressStyle"
-            label: "Progress Style"
-            description: "Choose how to visualize timer progress on the bar."
-            options: [{
-                "label": "None",
-                "value": "none"
-            }, {
-                "label": "Subtle Underline",
-                "value": "underline"
-            }, {
-                "label": "Background Fill",
-                "value": "background"
-            }]
-            defaultValue: "none"
         }
 
     }
