@@ -29,9 +29,13 @@ PluginComponent {
     readonly property int fontSize: Theme.fontSizeMedium
     readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
-    readonly property string displayFormat: pluginData.displayFormat || "full"
-    readonly property bool showPillIcon: pluginData.showPillIcon ?? true
+    readonly property string displayFormat: pluginData.displayFormat || "full_icon"
     readonly property string progressStyle: pluginData.progressStyle || "none"
+    // Derived helpers so pill components stay readable
+    readonly property bool _pillHasIcon: displayFormat === "icon" || displayFormat.indexOf("_icon") !== -1 || displayFormat === "pulse"
+    readonly property bool _pillIsIconOnly: displayFormat === "icon"
+    readonly property bool _pillIsProgress: displayFormat === "progress" || displayFormat === "progress_icon"
+    readonly property bool _pillIsPulse: displayFormat === "pulse"
     readonly property bool showHints: pluginData.showHints ?? true
     readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
     readonly property bool isPaused: !globalIsRunning.value && globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
@@ -56,7 +60,8 @@ PluginComponent {
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        if (root.displayFormat.indexOf("minimal") !== -1) {
+        const fmt = root.displayFormat;
+        if (fmt === "minimal" || fmt === "minimal_icon") {
             if (hours > 0)
                 return hours + "h " + minutes + "m";
 
@@ -65,7 +70,7 @@ PluginComponent {
 
             return seconds + "s";
         }
-        if (root.displayFormat.indexOf("compact") !== -1) {
+        if (fmt === "compact" || fmt === "compact_icon") {
             let res = "";
             if (hours > 0)
                 res += hours + "h ";
@@ -76,7 +81,7 @@ PluginComponent {
             res += seconds + "s";
             return res.trim();
         }
-        // Default: Full format (00:00:00)
+        // Full format (00:00:00) — default for full / full_icon / anything else with digits
         let result = "";
         if (hours > 0)
             result += hours.toString().padStart(2, '0') + ":";
@@ -184,13 +189,12 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Item {
-            property bool hasIcon: root.displayFormat.indexOf("icon") !== -1
-            property bool isProgressMode: root.displayFormat.indexOf("progress") !== -1
-            property bool isIconOnly: root.displayFormat === "icon"
+            // Size follows inner content; the pulse dot has a fixed footprint so the pill
+            // never collapses to zero when in pulse mode.
+            implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitWidth
+            implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitHeight
 
-            implicitWidth: pillRow.implicitWidth
-            implicitHeight: pillRow.implicitHeight
-
+            // ── Background / underline progress overlays (digit & progress modes) ──────
             Rectangle {
                 id: bgProgress
 
@@ -199,7 +203,7 @@ PluginComponent {
                 color: Theme.primary
                 opacity: 0.15
                 radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "background" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
             Rectangle {
@@ -209,52 +213,100 @@ PluginComponent {
                 height: 2
                 anchors.bottom: parent.bottom
                 color: Theme.primary
-                visible: root.progressStyle === "underline" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
+            // ── Normal content row (icon / digits / inline progress bar) ─────────────
             Row {
                 id: pillRow
 
-                spacing: (hasIcon && !isIconOnly) ? Theme.spacingS : 0
+                spacing: (root._pillHasIcon && !root._pillIsIconOnly && !root._pillIsPulse) ? Theme.spacingS : 0
+                visible: !root._pillIsPulse
 
+                // Status icon — shown when the format includes "_icon" or is "icon"
                 DankIcon {
                     name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                     size: Theme.iconSizeSmall
                     color: root.pillColor
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: hasIcon
+                    visible: root._pillHasIcon
                 }
 
+                // Time digits (hidden in icon-only / progress / pulse modes)
                 StyledText {
                     text: formatTime(globalRemainingSeconds.value)
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeMedium
                     isMonospace: true
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: !isIconOnly && !isProgressMode
+                    visible: !root._pillIsIconOnly && !root._pillIsProgress
                 }
 
+                // Inline progress bar (replaces digits when format is "progress*")
                 Item {
-                    width: 60
-                    height: Theme.iconSizeSmall
+                    width: 56
+                    height: 6
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: isProgressMode
+                    visible: root._pillIsProgress && !root.isReady
 
                     Rectangle {
-                        width: parent.width
-                        height: 4
-                        anchors.verticalCenter: parent.verticalCenter
-                        radius: 2
+                        anchors.fill: parent
+                        radius: 3
                         color: root.pillColor
                         opacity: 0.2
                     }
 
                     Rectangle {
                         width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                        height: 4
-                        anchors.verticalCenter: parent.verticalCenter
-                        radius: 2
+                        height: parent.height
+                        radius: 3
                         color: Theme.primary
+                    }
+
+                }
+
+            }
+
+            // ── Pulse dot (surprise mode) ────────────────────────────────────────────
+            // A single dot that breathes faster as time runs out.
+            // Beat interval maps: full time → 2 s, last 10 s → 0.4 s.
+            Item {
+                property real progress: globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)
+                // beatMs: slows to 2000 when fresh, speeds to 400 in the last moments
+                property int beatMs: root.isReady || root.isFinished ? 2000 : Math.max(400, Math.min(2000, Math.round(400 + progress * 1600)))
+
+                anchors.centerIn: parent
+                width: Theme.iconSizeSmall
+                height: Theme.iconSizeSmall
+                visible: root._pillIsPulse
+
+                Rectangle {
+                    id: pulseDot
+
+                    property real scale: 1
+
+                    anchors.centerIn: parent
+                    width: Theme.iconSizeSmall * scale
+                    height: width
+                    radius: width / 2
+                    color: root.pillColor
+
+                    SequentialAnimation on scale {
+                        loops: Animation.Infinite
+                        running: globalIsRunning.value && !root.isReady
+
+                        NumberAnimation {
+                            to: 1.4
+                            duration: parent.parent.beatMs / 2
+                            easing.type: Easing.InOutSine
+                        }
+
+                        NumberAnimation {
+                            to: 1
+                            duration: parent.parent.beatMs / 2
+                            easing.type: Easing.InOutSine
+                        }
+
                     }
 
                 }
@@ -267,12 +319,8 @@ PluginComponent {
 
     verticalBarPill: Component {
         Item {
-            property bool hasIcon: root.displayFormat.indexOf("icon") !== -1
-            property bool isProgressMode: root.displayFormat.indexOf("progress") !== -1
-            property bool isIconOnly: root.displayFormat === "icon"
-
-            implicitWidth: pillColumn.implicitWidth
-            implicitHeight: pillColumn.implicitHeight
+            implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitWidth
+            implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitHeight
 
             Rectangle {
                 id: bgProgressVertical
@@ -283,7 +331,7 @@ PluginComponent {
                 color: Theme.primary
                 opacity: 0.15
                 radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "background" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
             Rectangle {
@@ -293,20 +341,21 @@ PluginComponent {
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.right: parent.right
                 color: Theme.primary
-                visible: root.progressStyle === "underline" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "underline" && !root._pillIsProgress && !root._pillIsIconOnly && !root._pillIsPulse && !root.isReady && !root.isFinished
             }
 
             Column {
                 id: pillColumn
 
-                spacing: (hasIcon && !isIconOnly) ? Theme.spacingS : 0
+                spacing: (root._pillHasIcon && !root._pillIsIconOnly && !root._pillIsPulse) ? Theme.spacingS : 0
+                visible: !root._pillIsPulse
 
                 DankIcon {
                     name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                     size: Theme.iconSizeSmall
                     color: root.pillColor
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: hasIcon
+                    visible: root._pillHasIcon
                 }
 
                 StyledText {
@@ -316,31 +365,72 @@ PluginComponent {
                     isMonospace: true
                     anchors.horizontalCenter: parent.horizontalCenter
                     rotation: 90
-                    visible: !isIconOnly && !isProgressMode
+                    visible: !root._pillIsIconOnly && !root._pillIsProgress
                 }
 
+                // Vertical inline progress bar
                 Item {
-                    height: 60
-                    width: Theme.iconSizeSmall
+                    width: 6
+                    height: 56
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: isProgressMode
+                    visible: root._pillIsProgress && !root.isReady
 
                     Rectangle {
-                        height: parent.height
-                        width: 4
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        radius: 2
+                        anchors.fill: parent
+                        radius: 3
                         color: root.pillColor
                         opacity: 0.2
                     }
 
                     Rectangle {
+                        width: parent.width
                         height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                        width: 4
                         anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        radius: 2
+                        radius: 3
                         color: Theme.primary
+                    }
+
+                }
+
+            }
+
+            // Pulse dot for vertical bar
+            Item {
+                property real progress: globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)
+                property int beatMs: root.isReady || root.isFinished ? 2000 : Math.max(400, Math.min(2000, Math.round(400 + progress * 1600)))
+
+                anchors.centerIn: parent
+                width: Theme.iconSizeSmall
+                height: Theme.iconSizeSmall
+                visible: root._pillIsPulse
+
+                Rectangle {
+                    id: pulseDotV
+
+                    property real scale: 1
+
+                    anchors.centerIn: parent
+                    width: Theme.iconSizeSmall * scale
+                    height: width
+                    radius: width / 2
+                    color: root.pillColor
+
+                    SequentialAnimation on scale {
+                        loops: Animation.Infinite
+                        running: globalIsRunning.value && !root.isReady
+
+                        NumberAnimation {
+                            to: 1.4
+                            duration: parent.parent.beatMs / 2
+                            easing.type: Easing.InOutSine
+                        }
+
+                        NumberAnimation {
+                            to: 1
+                            duration: parent.parent.beatMs / 2
+                            easing.type: Easing.InOutSine
+                        }
+
                     }
 
                 }

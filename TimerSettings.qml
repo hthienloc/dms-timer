@@ -74,6 +74,9 @@ PluginSettings {
             }, {
                 "label": "Icon Only",
                 "value": "icon"
+            }, {
+                "label": "Pulse Dot ✦",
+                "value": "pulse"
             }]
             defaultValue: "full_icon"
         }
