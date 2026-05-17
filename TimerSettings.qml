@@ -48,26 +48,14 @@ PluginSettings {
             label: "Display Content"
             description: "Choose what content is displayed on the bar."
             options: [{
-                "label": "Icon + 00:00:00",
-                "value": "full_icon"
-            }, {
                 "label": "00:00:00",
                 "value": "full"
-            }, {
-                "label": "Icon + 1h 5m 10s",
-                "value": "compact_icon"
             }, {
                 "label": "1h 5m 10s",
                 "value": "compact"
             }, {
-                "label": "Icon + 5m 10s",
-                "value": "minimal_icon"
-            }, {
                 "label": "5m 10s",
                 "value": "minimal"
-            }, {
-                "label": "Icon + Progress Bar",
-                "value": "progress_icon"
             }, {
                 "label": "Progress Bar",
                 "value": "progress"
@@ -78,7 +66,14 @@ PluginSettings {
                 "label": "Pulse Dot ✦",
                 "value": "pulse"
             }]
-            defaultValue: "full_icon"
+            defaultValue: "full"
+        }
+
+        ToggleSetting {
+            settingKey: "showPillIcon"
+            label: "Show Icon"
+            description: "Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes."
+            defaultValue: true
         }
 
         SelectionSetting {

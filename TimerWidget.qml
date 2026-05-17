@@ -29,12 +29,13 @@ PluginComponent {
     readonly property int fontSize: Theme.fontSizeMedium
     readonly property string notificationBody: pluginData.notificationBody || "Timeout!"
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
-    readonly property string displayFormat: pluginData.displayFormat || "full_icon"
+    readonly property string displayFormat: pluginData.displayFormat || "full"
+    readonly property bool showPillIcon: pluginData.showPillIcon ?? true
     readonly property string progressStyle: pluginData.progressStyle || "none"
-    // Derived helpers so pill components stay readable
-    readonly property bool _pillHasIcon: displayFormat === "icon" || displayFormat.indexOf("_icon") !== -1 || displayFormat === "pulse"
+    // Derived helpers — icon/pulse modes are fixed layouts; others respect showPillIcon
+    readonly property bool _pillHasIcon: displayFormat === "icon" || (showPillIcon && displayFormat !== "pulse")
     readonly property bool _pillIsIconOnly: displayFormat === "icon"
-    readonly property bool _pillIsProgress: displayFormat === "progress" || displayFormat === "progress_icon"
+    readonly property bool _pillIsProgress: displayFormat === "progress"
     readonly property bool _pillIsPulse: displayFormat === "pulse"
     readonly property bool showHints: pluginData.showHints ?? true
     readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
@@ -60,8 +61,7 @@ PluginComponent {
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        const fmt = root.displayFormat;
-        if (fmt === "minimal" || fmt === "minimal_icon") {
+        if (root.displayFormat === "minimal") {
             if (hours > 0)
                 return hours + "h " + minutes + "m";
 
@@ -70,7 +70,7 @@ PluginComponent {
 
             return seconds + "s";
         }
-        if (fmt === "compact" || fmt === "compact_icon") {
+        if (root.displayFormat === "compact") {
             let res = "";
             if (hours > 0)
                 res += hours + "h ";
@@ -81,7 +81,7 @@ PluginComponent {
             res += seconds + "s";
             return res.trim();
         }
-        // Full format (00:00:00) — default for full / full_icon / anything else with digits
+        // Full format (00:00:00)
         let result = "";
         if (hours > 0)
             result += hours.toString().padStart(2, '0') + ":";
