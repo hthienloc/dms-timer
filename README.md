@@ -33,9 +33,8 @@ git clone https://github.com/hthienloc/dms-timer ~/.config/DankMaterialShell/plu
 
 | Action | Result |
 |--------|--------|
-| Left click | Open timer |
-| Right click | Quick start / pause |
-| Enter key | Reset |
+| Left click | Open timer (when ready) / Pause / Resume (when active) |
+| Right click | Quick start (when ready) / Reset (when active) |
 
 ## License
 
