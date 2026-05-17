@@ -56,7 +56,7 @@ PluginComponent {
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        if (root.displayFormat === "minimal") {
+        if (root.displayFormat.indexOf("minimal") !== -1) {
             if (hours > 0)
                 return hours + "h " + minutes + "m";
 
@@ -65,7 +65,7 @@ PluginComponent {
 
             return seconds + "s";
         }
-        if (root.displayFormat === "compact") {
+        if (root.displayFormat.indexOf("compact") !== -1) {
             let res = "";
             if (hours > 0)
                 res += hours + "h ";
@@ -184,6 +184,10 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Item {
+            property bool hasIcon: root.displayFormat.indexOf("icon") !== -1
+            property bool isProgressMode: root.displayFormat.indexOf("progress") !== -1
+            property bool isIconOnly: root.displayFormat === "icon"
+
             implicitWidth: pillRow.implicitWidth
             implicitHeight: pillRow.implicitHeight
 
@@ -195,7 +199,7 @@ PluginComponent {
                 color: Theme.primary
                 opacity: 0.15
                 radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "background" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
             }
 
             Rectangle {
@@ -205,20 +209,20 @@ PluginComponent {
                 height: 2
                 anchors.bottom: parent.bottom
                 color: Theme.primary
-                visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "underline" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
             }
 
             Row {
                 id: pillRow
 
-                spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+                spacing: (hasIcon && !isIconOnly) ? Theme.spacingS : 0
 
                 DankIcon {
                     name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                     size: Theme.iconSizeSmall
                     color: root.pillColor
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.showPillIcon || root.displayFormat === "icon"
+                    visible: hasIcon
                 }
 
                 StyledText {
@@ -227,7 +231,32 @@ PluginComponent {
                     font.pixelSize: Theme.fontSizeMedium
                     isMonospace: true
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: root.displayFormat !== "icon"
+                    visible: !isIconOnly && !isProgressMode
+                }
+
+                Item {
+                    width: 60
+                    height: Theme.iconSizeSmall
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: isProgressMode
+
+                    Rectangle {
+                        width: parent.width
+                        height: 4
+                        anchors.verticalCenter: parent.verticalCenter
+                        radius: 2
+                        color: root.pillColor
+                        opacity: 0.2
+                    }
+
+                    Rectangle {
+                        width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                        height: 4
+                        anchors.verticalCenter: parent.verticalCenter
+                        radius: 2
+                        color: Theme.primary
+                    }
+
                 }
 
             }
@@ -238,6 +267,10 @@ PluginComponent {
 
     verticalBarPill: Component {
         Item {
+            property bool hasIcon: root.displayFormat.indexOf("icon") !== -1
+            property bool isProgressMode: root.displayFormat.indexOf("progress") !== -1
+            property bool isIconOnly: root.displayFormat === "icon"
+
             implicitWidth: pillColumn.implicitWidth
             implicitHeight: pillColumn.implicitHeight
 
@@ -250,7 +283,7 @@ PluginComponent {
                 color: Theme.primary
                 opacity: 0.15
                 radius: Theme.cornerRadius
-                visible: root.progressStyle === "background" && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "background" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
             }
 
             Rectangle {
@@ -260,20 +293,20 @@ PluginComponent {
                 height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
                 anchors.right: parent.right
                 color: Theme.primary
-                visible: root.progressStyle === "underline" && !root.isReady && !root.isFinished
+                visible: root.progressStyle === "underline" && !isProgressMode && !isIconOnly && !root.isReady && !root.isFinished
             }
 
             Column {
                 id: pillColumn
 
-                spacing: (root.showPillIcon && root.displayFormat !== "icon") ? Theme.spacingS : 0
+                spacing: (hasIcon && !isIconOnly) ? Theme.spacingS : 0
 
                 DankIcon {
                     name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                     size: Theme.iconSizeSmall
                     color: root.pillColor
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root.showPillIcon || root.displayFormat === "icon"
+                    visible: hasIcon
                 }
 
                 StyledText {
@@ -283,7 +316,33 @@ PluginComponent {
                     isMonospace: true
                     anchors.horizontalCenter: parent.horizontalCenter
                     rotation: 90
-                    visible: root.displayFormat !== "icon"
+                    visible: !isIconOnly && !isProgressMode
+                }
+
+                Item {
+                    height: 60
+                    width: Theme.iconSizeSmall
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: isProgressMode
+
+                    Rectangle {
+                        height: parent.height
+                        width: 4
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        radius: 2
+                        color: root.pillColor
+                        opacity: 0.2
+                    }
+
+                    Rectangle {
+                        height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                        width: 4
+                        anchors.bottom: parent.bottom
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        radius: 2
+                        color: Theme.primary
+                    }
+
                 }
 
             }

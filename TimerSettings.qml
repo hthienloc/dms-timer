@@ -45,29 +45,37 @@ PluginSettings {
 
         SelectionSetting {
             settingKey: "displayFormat"
-            label: "Display Format"
-            description: "Choose how the time is formatted on the bar."
+            label: "Display Content"
+            description: "Choose what content is displayed on the bar."
             options: [{
+                "label": "Icon + 00:00:00",
+                "value": "full_icon"
+            }, {
                 "label": "00:00:00",
                 "value": "full"
+            }, {
+                "label": "Icon + 1h 5m 10s",
+                "value": "compact_icon"
             }, {
                 "label": "1h 5m 10s",
                 "value": "compact"
             }, {
+                "label": "Icon + 5m 10s",
+                "value": "minimal_icon"
+            }, {
                 "label": "5m 10s",
                 "value": "minimal"
+            }, {
+                "label": "Icon + Progress Bar",
+                "value": "progress_icon"
+            }, {
+                "label": "Progress Bar",
+                "value": "progress"
             }, {
                 "label": "Icon Only",
                 "value": "icon"
             }]
-            defaultValue: "full"
-        }
-
-        ToggleSetting {
-            settingKey: "showPillIcon"
-            label: "Show Icon in Pill"
-            description: "Display status icon alongside the digits."
-            defaultValue: true
+            defaultValue: "full_icon"
         }
 
         SelectionSetting {
