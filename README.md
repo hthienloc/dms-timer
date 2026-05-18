@@ -36,6 +36,32 @@ git clone https://github.com/hthienloc/dms-timer ~/.config/DankMaterialShell/plu
 | Left click | Open timer (when ready) / Pause / Resume (when active) |
 | Right click | Quick start (when ready) / Reset (when active) |
 
+## External Control (IPC)
+
+Use `dms ipc call timer <command> [args]` to control the timer from scripts or keybindings.
+
+| Command | Arguments | Description | Returns |
+|---------|-----------|-------------|---------|
+| `toggle` | *None* | Toggle pause/resume (starts quick start timer if ready) | `STARTED (Xm)`, `RUNNING`, `PAUSED` |
+| `pause` | *None* | Pause the active timer | `PAUSED`, `ALREADY_PAUSED` |
+| `resume` | *None* | Resume the paused timer | `RUNNING`, `ALREADY_RUNNING`, `STARTED (Xm)` |
+| `start` | `minutes` | Start the timer with a specific duration (1-999) | `STARTED (Xm)`, `ERROR: ...` |
+| `reset` | *None* | Reset and stop the timer | `RESET` |
+| `getStatus` | *None* | Get current state, remaining time, total time, and formatted display in JSON | JSON string |
+
+### Scripting & Keybinding examples
+
+**Quick Pause/Resume Hotkey (Hyprland):**
+```ini
+bind = SUPER_SHIFT, T, exec, dms ipc call timer toggle
+```
+
+**Get Formatted Time in Script:**
+```bash
+# Print the remaining time (e.g., "24:59")
+dms ipc call timer getStatus | jq -r '.formatted'
+```
+
 ## License
 
 GPL-3.0
@@ -46,6 +72,7 @@ GPL-3.0
 - [ ] **Extended Precise Input**: Support for `HH:MM:SS` format in manual input for long-running tasks.
 - [ ] **Custom "When Done" Actions**: Execute shell commands or trigger system actions (Lock, Suspend) on timeout.
 - [ ] **Multi-Timer Manager**: Support for labeling and tracking multiple concurrent countdowns.
-- [ ] **External Control (IPC)**: API to start, pause, or reset timers via command line or external scripts.
+- [x] **External Control (IPC)**: API to start, pause, or reset timers via command line or external scripts.
 - [ ] **Improved Persistence**: Save active timer state to disk to survive session restarts.
+
 

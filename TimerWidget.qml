@@ -187,6 +187,68 @@ PluginComponent {
         }
     }
 
+    IpcHandler {
+        function toggle() : string {
+            if (root.isReady) {
+                root.setTimer(root.quickStartMinutes);
+                return "STARTED (" + root.quickStartMinutes + "m)";
+            } else {
+                const nextState = !globalIsRunning.value;
+                root.toggleTimer();
+                return nextState ? "RUNNING" : "PAUSED";
+            }
+        }
+
+        function pause() : string {
+            if (globalIsRunning.value) {
+                globalIsRunning.set(false);
+                return "PAUSED";
+            }
+            return "ALREADY_PAUSED";
+        }
+
+        function resume() : string {
+            if (!globalIsRunning.value && globalRemainingSeconds.value > 0) {
+                globalIsRunning.set(true);
+                return "RUNNING";
+            }
+            if (root.isReady) {
+                root.setTimer(root.quickStartMinutes);
+                return "STARTED (" + root.quickStartMinutes + "m)";
+            }
+            return "ALREADY_RUNNING";
+        }
+
+        function start(minutesStr) : string {
+            const minutes = parseInt(minutesStr);
+            if (isNaN(minutes) || minutes <= 0 || minutes > 999)
+                return "ERROR: Invalid minutes (must be 1-999)";
+
+            root.setTimer(minutes);
+            return "STARTED (" + minutes + "m)";
+        }
+
+        function reset() : string {
+            root.resetTimer();
+            return "RESET";
+        }
+
+        function getStatus() : string {
+            const state = root.isReady ? "READY" : (root.isFinished ? "FINISHED" : (globalIsRunning.value ? "RUNNING" : "PAUSED"));
+            const remaining = globalRemainingSeconds.value;
+            const total = globalTotalSeconds.value;
+            const formatted = root.formatTime(remaining);
+            return JSON.stringify({
+                "state": state,
+                "remaining": remaining,
+                "total": total,
+                "formatted": formatted
+            });
+        }
+
+        target: "timer"
+    }
+
     horizontalBarPill: Component {
         Item {
             // Size follows inner content; the pulse dot has a fixed footprint so the pill
