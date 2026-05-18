@@ -451,7 +451,7 @@ PluginComponent {
 
                                 StyledText {
                                     text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                                    font.pixelSize: 13
+                                    font.pixelSize: 15
                                     font.weight: Font.DemiBold
                                     color: Theme.onPrimary
                                     anchors.centerIn: parent
