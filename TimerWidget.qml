@@ -135,7 +135,7 @@ PluginComponent {
     }
     popoutWidth: 360
     popoutHeight: {
-        const baseHeight = root.showHints ? 330 : 280;
+        const baseHeight = root.showHints ? 385 : 335;
         const presetRows = Math.ceil(root.presets.length / 4);
         const extraRows = Math.max(0, presetRows - 3);
         return baseHeight + (extraRows * 42);
@@ -666,6 +666,19 @@ PluginComponent {
 
                         }
 
+                    }
+
+                    DankTextField {
+                        id: cmdInput
+
+                        width: parent.width - 24
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        placeholderText: "Or custom command (e.g. play-sound.sh)..."
+                        showClearButton: true
+                        text: root.customCommandOnTimeout
+                        onTextChanged: {
+                            pluginData.customCommandOnTimeout = text;
+                        }
                     }
 
                 }
