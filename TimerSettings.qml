@@ -131,6 +131,44 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
+            text: "Custom Actions"
+        }
+
+        SelectionSetting {
+            settingKey: "systemActionOnTimeout"
+            label: "Trigger System Action"
+            description: "Automatically perform a system action when the timer finishes."
+            options: [{
+                "label": "None",
+                "value": "none"
+            }, {
+                "label": "Lock Screen",
+                "value": "lock"
+            }, {
+                "label": "Suspend",
+                "value": "suspend"
+            }, {
+                "label": "Hibernate",
+                "value": "hibernate"
+            }, {
+                "label": "Power Off",
+                "value": "poweroff"
+            }]
+            defaultValue: "none"
+        }
+
+        StringSetting {
+            settingKey: "customCommandOnTimeout"
+            label: "Run Custom Shell Command"
+            description: "Execute a shell command when the timer finishes."
+            placeholder: "e.g., systemctl suspend"
+            defaultValue: ""
+        }
+
+    }
+
+    SettingsCard {
+        SectionTitle {
             text: "Sound"
         }
 

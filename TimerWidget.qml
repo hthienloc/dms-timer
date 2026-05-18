@@ -32,6 +32,8 @@ PluginComponent {
     readonly property string displayFormat: pluginData.displayFormat || "full"
     readonly property bool showPillIcon: pluginData.showPillIcon ?? true
     readonly property bool showReadyPlaceholder: pluginData.showReadyPlaceholder ?? true
+    readonly property string systemActionOnTimeout: pluginData.systemActionOnTimeout || "none"
+    readonly property string customCommandOnTimeout: pluginData.customCommandOnTimeout || ""
     // Derived helpers — icon/pulse modes are fixed layouts; others respect showPillIcon
     readonly property bool _pillHasIcon: displayFormat === "icon" || (showPillIcon && displayFormat !== "pulse")
     readonly property bool _pillIsIconOnly: displayFormat === "icon"
@@ -180,6 +182,23 @@ PluginComponent {
                     AudioService.playCriticalNotificationSound();
                 else
                     Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", "/usr/share/sounds/freedesktop/stereo/complete.oga"], null, 0);
+
+                // Handle system actions on timeout
+                if (root.systemActionOnTimeout === "lock") {
+                    Proc.runCommand("timer-lock", ["loginctl", "lock-session"], null, 0);
+                } else if (root.systemActionOnTimeout === "suspend") {
+                    Proc.runCommand("timer-suspend", ["systemctl", "suspend"], null, 0);
+                } else if (root.systemActionOnTimeout === "hibernate") {
+                    Proc.runCommand("timer-hibernate", ["systemctl", "hibernate"], null, 0);
+                } else if (root.systemActionOnTimeout === "poweroff") {
+                    Proc.runCommand("timer-poweroff", ["systemctl", "poweroff"], null, 0);
+                }
+
+                // Handle custom command on timeout
+                if (root.customCommandOnTimeout !== "") {
+                    Proc.runCommand("timer-custom-command", ["bash", "-c", root.customCommandOnTimeout], null, 0);
+                }
+
                 if (root.timeoutBehavior === "reset")
                     root.resetTimer();
 
