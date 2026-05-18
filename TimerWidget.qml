@@ -32,8 +32,8 @@ PluginComponent {
     readonly property string displayFormat: pluginData.displayFormat || "full"
     readonly property bool showPillIcon: pluginData.showPillIcon ?? true
     readonly property bool showReadyPlaceholder: pluginData.showReadyPlaceholder ?? true
-    readonly property string systemActionOnTimeout: pluginData.systemActionOnTimeout || "none"
-    readonly property string customCommandOnTimeout: pluginData.customCommandOnTimeout || ""
+    property string systemActionOnTimeout: pluginData.systemActionOnTimeout || "none"
+    property string customCommandOnTimeout: pluginData.customCommandOnTimeout || ""
     // Derived helpers — icon/pulse modes are fixed layouts; others respect showPillIcon
     readonly property bool _pillHasIcon: displayFormat === "icon" || (showPillIcon && displayFormat !== "pulse")
     readonly property bool _pillIsIconOnly: displayFormat === "icon"
@@ -658,7 +658,8 @@ PluginComponent {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
-                                        pluginData.systemActionOnTimeout = modelData.value;
+                                        root.systemActionOnTimeout = modelData.value;
+                                        pluginService.savePluginData(root.pluginId, "systemActionOnTimeout", modelData.value);
                                     }
                                 }
 
@@ -677,7 +678,8 @@ PluginComponent {
                         showClearButton: true
                         text: root.customCommandOnTimeout
                         onTextChanged: {
-                            pluginData.customCommandOnTimeout = text;
+                            root.customCommandOnTimeout = text;
+                            pluginService.savePluginData(root.pluginId, "customCommandOnTimeout", text);
                         }
                     }
 
