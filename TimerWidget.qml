@@ -31,6 +31,7 @@ PluginComponent {
     readonly property string timeoutBehavior: pluginData.timeoutBehavior || "stay"
     readonly property string displayFormat: pluginData.displayFormat || "full"
     readonly property bool showPillIcon: pluginData.showPillIcon ?? true
+    readonly property bool showReadyPlaceholder: pluginData.showReadyPlaceholder ?? true
     // Derived helpers — icon/pulse modes are fixed layouts; others respect showPillIcon
     readonly property bool _pillHasIcon: displayFormat === "icon" || (showPillIcon && displayFormat !== "pulse")
     readonly property bool _pillIsIconOnly: displayFormat === "icon"
@@ -216,7 +217,7 @@ PluginComponent {
                     font.pixelSize: Theme.fontSizeMedium
                     isMonospace: true
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: !root._pillIsIconOnly && !root._pillIsProgress
+                    visible: !root._pillIsIconOnly && !root._pillIsProgress && (!root.isReady || root.showReadyPlaceholder)
                 }
 
                 // Inline progress bar (replaces digits when format is "progress*")
@@ -320,7 +321,7 @@ PluginComponent {
                     isMonospace: true
                     anchors.horizontalCenter: parent.horizontalCenter
                     rotation: 90
-                    visible: !root._pillIsIconOnly && !root._pillIsProgress
+                    visible: !root._pillIsIconOnly && !root._pillIsProgress && (!root.isReady || root.showReadyPlaceholder)
                 }
 
                 // Vertical inline progress bar

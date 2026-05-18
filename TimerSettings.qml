@@ -50,6 +50,13 @@ PluginSettings {
             defaultValue: true
         }
 
+        ToggleSetting {
+            settingKey: "showReadyPlaceholder"
+            label: "Show Ready Placeholder"
+            description: "Show placeholder digits/text when the timer is in the ready state."
+            defaultValue: true
+        }
+
         SelectionSetting {
             settingKey: "displayFormat"
             label: "Display Content"
