@@ -135,7 +135,7 @@ PluginComponent {
     }
     popoutWidth: 360
     popoutHeight: {
-        const baseHeight = root.showHints ? 240 : 200;
+        const baseHeight = root.showHints ? 330 : 280;
         const presetRows = Math.ceil(root.presets.length / 4);
         const extraRows = Math.max(0, presetRows - 3);
         return baseHeight + (extraRows * 42);
@@ -182,22 +182,18 @@ PluginComponent {
                     AudioService.playCriticalNotificationSound();
                 else
                     Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", "/usr/share/sounds/freedesktop/stereo/complete.oga"], null, 0);
-
                 // Handle system actions on timeout
-                if (root.systemActionOnTimeout === "lock") {
+                if (root.systemActionOnTimeout === "lock")
                     Proc.runCommand("timer-lock", ["loginctl", "lock-session"], null, 0);
-                } else if (root.systemActionOnTimeout === "suspend") {
+                else if (root.systemActionOnTimeout === "suspend")
                     Proc.runCommand("timer-suspend", ["systemctl", "suspend"], null, 0);
-                } else if (root.systemActionOnTimeout === "hibernate") {
+                else if (root.systemActionOnTimeout === "hibernate")
                     Proc.runCommand("timer-hibernate", ["systemctl", "hibernate"], null, 0);
-                } else if (root.systemActionOnTimeout === "poweroff") {
+                else if (root.systemActionOnTimeout === "poweroff")
                     Proc.runCommand("timer-poweroff", ["systemctl", "poweroff"], null, 0);
-                }
-
                 // Handle custom command on timeout
-                if (root.customCommandOnTimeout !== "") {
+                if (root.customCommandOnTimeout !== "")
                     Proc.runCommand("timer-custom-command", ["bash", "-c", root.customCommandOnTimeout], null, 0);
-                }
 
                 if (root.timeoutBehavior === "reset")
                     root.resetTimer();
@@ -587,6 +583,87 @@ PluginComponent {
                                 setTimer(parseInt(customInput.text));
                                 customInput.text = "";
                             }
+                        }
+
+                    }
+
+                }
+
+                Column {
+                    width: parent.width
+                    spacing: Theme.spacingS
+
+                    StyledText {
+                        text: "When Done"
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.surfaceVariantText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    Row {
+                        spacing: 4
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        Repeater {
+                            model: [{
+                                "label": "None",
+                                "value": "none",
+                                "icon": "block"
+                            }, {
+                                "label": "Lock",
+                                "value": "lock",
+                                "icon": "lock"
+                            }, {
+                                "label": "Sleep",
+                                "value": "suspend",
+                                "icon": "snooze"
+                            }, {
+                                "label": "Hibernate",
+                                "value": "hibernate",
+                                "icon": "nights_stay"
+                            }, {
+                                "label": "Shutdown",
+                                "value": "poweroff",
+                                "icon": "power_settings_new"
+                            }]
+
+                            delegate: Rectangle {
+                                width: 58
+                                height: 42
+                                radius: Theme.cornerRadius
+                                color: root.systemActionOnTimeout === modelData.value ? Theme.primary : Theme.surfaceContainerHigh
+
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 2
+
+                                    DankIcon {
+                                        name: modelData.icon
+                                        size: 16
+                                        color: root.systemActionOnTimeout === modelData.value ? Theme.onPrimary : Theme.surfaceText
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                    }
+
+                                    StyledText {
+                                        text: modelData.label
+                                        font.pixelSize: 9
+                                        font.weight: Font.Medium
+                                        color: root.systemActionOnTimeout === modelData.value ? Theme.onPrimary : Theme.surfaceText
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                    }
+
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: {
+                                        pluginData.systemActionOnTimeout = modelData.value;
+                                    }
+                                }
+
+                            }
+
                         }
 
                     }

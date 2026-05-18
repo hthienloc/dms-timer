@@ -28,7 +28,7 @@ git clone https://github.com/hthienloc/dms-timer ~/.config/DankMaterialShell/plu
 - **Desktop notification** - Alerts when timer finishes
 - **Custom sound** - Use system sound or set your own
 - **Auto-reset** - Option to reset after completion
-- **Custom "When Done" Actions** - Execute shell commands or system actions (Lock, Suspend, Hibernate, Power Off) on timeout
+- **Custom "When Done" Actions** - Choose system actions (Lock, Sleep, Hibernate, Shutdown) directly inside the popout or set a custom command to trigger on timeout
 
 ## Usage
 
