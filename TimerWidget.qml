@@ -1,4 +1,4 @@
-import "../dms-common"
+import "./dms-common"
 import QtQuick
 import QtQuick.Controls
 import Quickshell
@@ -507,7 +507,7 @@ PluginComponent {
                     spacing: Theme.spacingM
 
                     StyledText {
-                        text: "Select a preset or enter minutes"
+                        text: I18n.tr("Select a preset or enter minutes")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -575,7 +575,7 @@ PluginComponent {
                         }
 
                         DankButton {
-                            text: "Set"
+                            text: I18n.tr("Set")
                             backgroundColor: Theme.primary
                             textColor: Theme.onPrimary
                             enabled: isValidInput(customInput.text)
@@ -594,7 +594,7 @@ PluginComponent {
                     spacing: Theme.spacingS
 
                     StyledText {
-                        text: "When Done"
+                        text: I18n.tr("When Done")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.surfaceVariantText
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -691,7 +691,7 @@ PluginComponent {
 
                     HintItem {
                         icon: "info"
-                        text: "Left-click to Pause/Resume, Right-click to Reset (Quick Start when ready)."
+                        text: I18n.tr("Left-click to Pause/Resume, Right-click to Reset (Quick Start when ready).")
                     }
 
                 }

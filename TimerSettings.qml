@@ -1,4 +1,4 @@
-import "../dms-common"
+import "./dms-common"
 import QtQuick
 import QtQuick.Controls
 import qs.Common
@@ -11,27 +11,23 @@ PluginSettings {
 
     pluginId: "timer"
 
-    PluginHeader {
-        title: "Timer Settings"
-    }
-
     SettingsCard {
         SectionTitle {
-            text: "Presets"
+            text: I18n.tr("Presets"); icon: "timer"
         }
 
         StringSetting {
             settingKey: "presets"
-            label: "Quick Presets (minutes)"
-            description: "Comma-separated list of minutes for quick start buttons."
+            label: I18n.tr("Quick Presets (minutes)")
+            description: I18n.tr("Comma-separated list of minutes for quick start buttons.")
             placeholder: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
             defaultValue: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
         }
 
         StringSetting {
             settingKey: "quickStartMinutes"
-            label: "Right-Click Quick Start (minutes)"
-            description: "The duration in minutes to start when right-clicking the icon in Ready state."
+            label: I18n.tr("Right-Click Quick Start (minutes)")
+            description: I18n.tr("The duration in minutes to start when right-clicking the icon in Ready state.")
             placeholder: "25"
             defaultValue: "25"
         }
@@ -40,44 +36,44 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
-            text: "Display"
+            text: I18n.tr("Display"); icon: "display_settings"
         }
 
         ToggleSetting {
             settingKey: "showPillIcon"
-            label: "Show Icon"
-            description: "Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes."
+            label: I18n.tr("Show Icon")
+            description: I18n.tr("Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes.")
             defaultValue: true
         }
 
         ToggleSetting {
             settingKey: "showReadyPlaceholder"
-            label: "Show Ready Placeholder"
-            description: "Show placeholder digits/text when the timer is in the ready state."
+            label: I18n.tr("Show Ready Placeholder")
+            description: I18n.tr("Show placeholder digits/text when the timer is in the ready state.")
             defaultValue: true
         }
 
         SelectionSetting {
             settingKey: "displayFormat"
-            label: "Display Content"
-            description: "Choose what content is displayed on the bar."
+            label: I18n.tr("Display Content")
+            description: I18n.tr("Choose what content is displayed on the bar.")
             options: [{
                 "label": "00:00:00",
                 "value": "full"
             }, {
-                "label": "1h 5m 10s",
+                "label": I18n.tr("1h 5m 10s"),
                 "value": "compact"
             }, {
-                "label": "5m 10s",
+                "label": I18n.tr("5m 10s"),
                 "value": "minimal"
             }, {
-                "label": "Progress Bar",
+                "label": I18n.tr("Progress Bar"),
                 "value": "progress"
             }, {
-                "label": "Icon Only",
+                "label": I18n.tr("Icon Only"),
                 "value": "icon"
             }, {
-                "label": "Pulse Dot ✦",
+                "label": I18n.tr("Pulse Dot ✦"),
                 "value": "pulse"
             }]
             defaultValue: "full"
@@ -87,18 +83,18 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
-            text: "Notifications"
+            text: I18n.tr("Notifications"); icon: "notifications"
         }
 
         SelectionSetting {
             settingKey: "timeoutBehavior"
-            label: "When Finished"
-            description: "What to do when the timer reaches zero."
+            label: I18n.tr("When Finished")
+            description: I18n.tr("What to do when the timer reaches zero.")
             options: [{
-                "label": "Stay at Finished",
+                "label": I18n.tr("Stay at Finished"),
                 "value": "stay"
             }, {
-                "label": "Reset to Ready",
+                "label": I18n.tr("Reset to Ready"),
                 "value": "reset"
             }]
             defaultValue: "reset"
@@ -106,24 +102,24 @@ PluginSettings {
 
         ToggleSetting {
             settingKey: "showNotification"
-            label: "Show Desktop Notification"
-            description: "Display a notification when the timer finishes."
+            label: I18n.tr("Show Desktop Notification")
+            description: I18n.tr("Display a notification when the timer finishes.")
             defaultValue: true
         }
 
         StringSetting {
             settingKey: "notificationTitle"
-            label: "Notification Title"
-            placeholder: "Timer"
-            defaultValue: "Timer"
+            label: I18n.tr("Notification Title")
+            placeholder: I18n.tr("Timer")
+            defaultValue: I18n.tr("Timer")
             visible: pluginData.showNotification ?? true
         }
 
         StringSetting {
             settingKey: "notificationBody"
-            label: "Notification Body"
-            placeholder: "Timeout!"
-            defaultValue: "Timeout!"
+            label: I18n.tr("Notification Body")
+            placeholder: I18n.tr("Timeout!")
+            defaultValue: I18n.tr("Timeout!")
             visible: pluginData.showNotification ?? true
         }
 
@@ -131,27 +127,27 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
-            text: "Custom Actions"
+            text: I18n.tr("Custom Actions"); icon: "bolt"
         }
 
         SelectionSetting {
             settingKey: "systemActionOnTimeout"
-            label: "Trigger System Action"
-            description: "Automatically perform a system action when the timer finishes."
+            label: I18n.tr("Trigger System Action")
+            description: I18n.tr("Automatically perform a system action when the timer finishes.")
             options: [{
-                "label": "None",
+                "label": I18n.tr("None"),
                 "value": "none"
             }, {
-                "label": "Lock Screen",
+                "label": I18n.tr("Lock Screen"),
                 "value": "lock"
             }, {
-                "label": "Suspend",
+                "label": I18n.tr("Suspend"),
                 "value": "suspend"
             }, {
-                "label": "Hibernate",
+                "label": I18n.tr("Hibernate"),
                 "value": "hibernate"
             }, {
-                "label": "Power Off",
+                "label": I18n.tr("Power Off"),
                 "value": "poweroff"
             }]
             defaultValue: "none"
@@ -159,8 +155,8 @@ PluginSettings {
 
         StringSetting {
             settingKey: "customCommandOnTimeout"
-            label: "Run Custom Shell Command"
-            description: "Execute a shell command when the timer finishes."
+            label: I18n.tr("Run Custom Shell Command")
+            description: I18n.tr("Execute a shell command when the timer finishes.")
             placeholder: "e.g., systemctl suspend"
             defaultValue: ""
         }
@@ -169,21 +165,21 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
-            text: "Sound"
+            text: I18n.tr("Sound"); icon: "volume_up"
         }
 
         StringSetting {
             settingKey: "soundPath"
-            label: "Custom Sound Path"
-            description: "Full path to sound file. Leave empty for default."
+            label: I18n.tr("Custom Sound Path")
+            description: I18n.tr("Full path to sound file. Leave empty for default.")
             placeholder: "/usr/share/sounds/freedesktop/stereo/complete.oga"
             defaultValue: ""
         }
 
         ToggleSetting {
             settingKey: "useSystemNotificationSound"
-            label: "Use System Notification Sound"
-            description: "Use system's critical notification sound if no path is set."
+            label: I18n.tr("Use System Notification Sound")
+            description: I18n.tr("Use system's critical notification sound if no path is set.")
             defaultValue: true
         }
 
@@ -191,16 +187,20 @@ PluginSettings {
 
     SettingsCard {
         SectionTitle {
-            text: "Behavior"
+            text: I18n.tr("Behavior"); icon: "settings"
         }
 
         ToggleSetting {
             settingKey: "showHints"
-            label: "Show Hints"
-            description: "Display helpful usage tips and shortcuts at the bottom of the popout."
+            label: I18n.tr("Show Hints")
+            description: I18n.tr("Display helpful usage tips and shortcuts at the bottom of the popout.")
             defaultValue: true
         }
 
+    }
+
+    PluginAbout {
+        repoUrl: "https://github.com/hthienloc/dms-timer"
     }
 
 }
