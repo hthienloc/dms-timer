@@ -197,6 +197,20 @@ PluginSettings {
             defaultValue: true
         }
 
+        ToggleSetting {
+            settingKey: "autoDND"
+            label: I18n.tr("Automatically Do Not Disturb")
+            description: I18n.tr("Toggle Do Not Disturb mode when the timer is active.")
+            defaultValue: false
+        }
+
+        ToggleSetting {
+            settingKey: "showTimeoutActions"
+            label: I18n.tr("Show 'When Done' Section")
+            description: I18n.tr("Display custom timeout and system actions in the popout.")
+            defaultValue: true
+        }
+
     }
 
     PluginAbout {

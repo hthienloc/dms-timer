@@ -40,6 +40,8 @@ PluginComponent {
     readonly property bool _pillIsProgress: displayFormat === "progress"
     readonly property bool _pillIsPulse: displayFormat === "pulse"
     readonly property bool showHints: pluginData.showHints ?? true
+    readonly property bool autoDND: pluginData.autoDND ?? false
+    readonly property bool showTimeoutActions: pluginData.showTimeoutActions ?? true
     readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
     readonly property bool isPaused: !globalIsRunning.value && globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
     readonly property bool isReady: globalRemainingSeconds.value === 0 && globalTotalSeconds.value === 0
@@ -135,10 +137,36 @@ PluginComponent {
     }
     popoutWidth: 360
     popoutHeight: {
-        const baseHeight = root.showHints ? 385 : 335;
+        let baseHeight = root.showHints ? 385 : 335;
+        if (!root.showTimeoutActions) {
+            baseHeight -= 120;
+        }
         const presetRows = Math.ceil(root.presets.length / 4);
         const extraRows = Math.max(0, presetRows - 3);
         return baseHeight + (extraRows * 42);
+    }
+
+    Connections {
+        target: globalIsRunning
+        function onValueChanged() {
+            if (root.autoDND) {
+                SessionData.setDoNotDisturb(globalIsRunning.value);
+            }
+        }
+    }
+
+    onAutoDNDChanged: {
+        if (!root.autoDND) {
+            SessionData.setDoNotDisturb(false);
+        } else if (globalIsRunning.value) {
+            SessionData.setDoNotDisturb(true);
+        }
+    }
+
+    Component.onDestruction: {
+        if (root.autoDND) {
+            SessionData.setDoNotDisturb(false);
+        }
     }
 
     PluginGlobalVar {
@@ -592,6 +620,7 @@ PluginComponent {
                 Column {
                     width: parent.width
                     spacing: Theme.spacingS
+                    visible: root.showTimeoutActions
 
                     StyledText {
                         text: I18n.tr("When Done")
