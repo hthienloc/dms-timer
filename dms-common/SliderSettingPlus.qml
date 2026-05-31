@@ -25,40 +25,35 @@ Column {
     opacity: enabled ? 1 : 0.5
     Behavior on opacity { NumberAnimation { duration: Theme.shortDuration } }
 
+    property bool isInitialized: false
     readonly property bool isDirty: Math.round(value) !== Math.round(defaultValue)
 
     function resetToDefault() {
         console.log(`[SliderSettingPlus] Resetting ${settingKey}`);
         value = defaultValue;
-        dankSlider.value = defaultValue; // Force update because DankSlider breaks bindings on interaction
+        dankSlider.value = defaultValue;
     }
 
     function loadValue() {
         const settings = findSettings();
         if (settings && settings.pluginService) {
-            value = settings.loadValue(settingKey, defaultValue);
+            const val = settings.loadValue(settingKey, defaultValue);
+            value = val;
+            dankSlider.value = val;
+            isInitialized = true;
         }
     }
 
     Component.onCompleted: {
-        loadValue();
-    }
-
-    // Debounce saving to prevent lag in complex plugins (like Kaomoji Picker)
-    Timer {
-        id: saveDebounce
-        interval: 200 // ms
-        repeat: false
-        onTriggered: {
-            const settings = findSettings();
-            if (settings) {
-                settings.saveValue(settingKey, Math.round(root.value));
-            }
-        }
+        Qt.callLater(loadValue);
     }
 
     onValueChanged: {
-        saveDebounce.restart();
+        if (!isInitialized) return;
+        const settings = findSettings();
+        if (settings) {
+            settings.saveValue(settingKey, Math.round(value));
+        }
     }
 
     function findSettings() {
@@ -75,7 +70,7 @@ Column {
     // ── Label Row ─────────────────────────────────────────────────────────
     Item {
         width: parent.width
-        height: 36 // Tăng mật độ
+        height: 36
 
         Row {
             spacing: Theme.spacingXS
