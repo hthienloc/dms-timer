@@ -12,51 +12,91 @@ PluginSettings {
     pluginId: "timer"
 
     SettingsCard {
-        SectionTitle {
-            text: I18n.tr("Presets"); icon: "timer"
+        SectionTitle { 
+            id: usageTitle
+            text: I18n.tr("Usage Guide")
+            icon: "menu_book" 
+            collapsible: true
+            settingKey: "usageGuideExpanded"
         }
 
-        StringSetting {
+        UsageGuide {
+            expanded: usageTitle.isExpanded
+            items: [
+                I18n.tr("<b>Left-click</b> the pill to <b>Pause</b> or <b>Resume</b> the timer."),
+                I18n.tr("<b>Right-click</b> the pill to <b>Reset</b> (or <b>Quick Start</b> if ready)."),
+                I18n.tr("Open the <b>Popout</b> to select presets or enter custom minutes.")
+            ]
+        }
+    }
+
+    SettingsCard {
+        id: presetsSection
+        SectionTitle {
+            text: I18n.tr("Presets"); icon: "timer"
+            showReset: presets.isDirty || quickStartMinutes.isDirty
+            onResetClicked: {
+                presets.resetToDefault();
+                quickStartMinutes.resetToDefault();
+            }
+        }
+
+        StringSettingPlus {
+            id: presets
             settingKey: "presets"
-            label: I18n.tr("Quick Presets (minutes)")
+            label: I18n.tr("Quick Presets")
             description: I18n.tr("Comma-separated list of minutes for quick start buttons.")
             placeholder: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
             defaultValue: "1, 2, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120"
         }
 
-        StringSetting {
+        Separator {}
+
+        StringSettingPlus {
+            id: quickStartMinutes
             settingKey: "quickStartMinutes"
-            label: I18n.tr("Right-Click Quick Start (minutes)")
+            label: I18n.tr("Right-Click Quick Start")
             description: I18n.tr("The duration in minutes to start when right-clicking the icon in Ready state.")
             placeholder: "25"
             defaultValue: "25"
         }
-
     }
 
     SettingsCard {
+        id: displaySection
         SectionTitle {
             text: I18n.tr("Display"); icon: "display_settings"
+            showReset: showPillIcon.isDirty || showReadyPlaceholder.isDirty || displayFormat.isDirty
+            onResetClicked: {
+                showPillIcon.resetToDefault();
+                showReadyPlaceholder.resetToDefault();
+                displayFormat.resetToDefault();
+            }
         }
 
-        ToggleSetting {
+        ToggleSettingPlus {
+            id: showPillIcon
             settingKey: "showPillIcon"
             label: I18n.tr("Show Icon")
-            description: I18n.tr("Display the status icon alongside the content. Has no effect in Icon Only or Pulse Dot modes.")
             defaultValue: true
         }
 
-        ToggleSetting {
+        Separator {}
+
+        ToggleSettingPlus {
+            id: showReadyPlaceholder
             settingKey: "showReadyPlaceholder"
             label: I18n.tr("Show Ready Placeholder")
             description: I18n.tr("Show placeholder digits/text when the timer is in the ready state.")
             defaultValue: true
         }
 
-        SelectionSetting {
+        Separator {}
+
+        SelectionSettingPlus {
+            id: displayFormat
             settingKey: "displayFormat"
             label: I18n.tr("Display Content")
-            description: I18n.tr("Choose what content is displayed on the bar.")
             options: [{
                 "label": "00:00:00",
                 "value": "full"
@@ -78,18 +118,26 @@ PluginSettings {
             }]
             defaultValue: "full"
         }
-
     }
 
     SettingsCard {
+        id: notificationsSection
         SectionTitle {
             text: I18n.tr("Notifications"); icon: "notifications"
+            showReset: timeoutBehavior.isDirty || showNotification.isDirty || notificationTitle.isDirty || notificationBody.isDirty || autoDND.isDirty
+            onResetClicked: {
+                timeoutBehavior.resetToDefault();
+                showNotification.resetToDefault();
+                notificationTitle.resetToDefault();
+                notificationBody.resetToDefault();
+                autoDND.resetToDefault();
+            }
         }
 
-        SelectionSetting {
+        SelectionSettingPlus {
+            id: timeoutBehavior
             settingKey: "timeoutBehavior"
             label: I18n.tr("When Finished")
-            description: I18n.tr("What to do when the timer reaches zero.")
             options: [{
                 "label": I18n.tr("Stay at Finished"),
                 "value": "stay"
@@ -100,44 +148,61 @@ PluginSettings {
             defaultValue: "reset"
         }
 
-        ToggleSetting {
+        Separator {}
+
+        ToggleSettingPlus {
+            id: showNotification
             settingKey: "showNotification"
             label: I18n.tr("Show Desktop Notification")
-            description: I18n.tr("Display a notification when the timer finishes.")
             defaultValue: true
         }
 
-        StringSetting {
+        Separator { visible: showNotification.value }
+
+        StringSettingPlus {
+            id: notificationTitle
             settingKey: "notificationTitle"
             label: I18n.tr("Notification Title")
             placeholder: I18n.tr("Timer")
             defaultValue: I18n.tr("Timer")
-            visible: pluginData.showNotification ?? true
+            visible: showNotification.value
         }
 
-        StringSetting {
+        Separator { visible: showNotification.value }
+
+        StringSettingPlus {
+            id: notificationBody
             settingKey: "notificationBody"
             label: I18n.tr("Notification Body")
             placeholder: I18n.tr("Timeout!")
             defaultValue: I18n.tr("Timeout!")
-            visible: pluginData.showNotification ?? true
+            visible: showNotification.value
         }
 
-        ToggleSetting {
+        Separator {}
+
+        ToggleSettingPlus {
+            id: autoDND
             settingKey: "autoDND"
             label: I18n.tr("Automatically Do Not Disturb")
             description: I18n.tr("Toggle Do Not Disturb mode when the timer is active.")
             defaultValue: false
         }
-
     }
 
     SettingsCard {
+        id: customActionsSection
         SectionTitle {
             text: I18n.tr("Custom Actions"); icon: "bolt"
+            showReset: systemActionOnTimeout.isDirty || customCommandOnTimeout.isDirty
+            onResetClicked: {
+                systemActionOnTimeout.resetToDefault();
+                customCommandOnTimeout.resetToDefault();
+            }
         }
 
-        SelectionSetting {
+        SelectionSettingPlus {
+            id: systemActionOnTimeout
             settingKey: "systemActionOnTimeout"
             label: I18n.tr("Trigger System Action")
             description: I18n.tr("Automatically perform a system action when the timer finishes.")
@@ -160,22 +225,31 @@ PluginSettings {
             defaultValue: "none"
         }
 
-        StringSetting {
+        Separator {}
+
+        StringSettingPlus {
+            id: customCommandOnTimeout
             settingKey: "customCommandOnTimeout"
             label: I18n.tr("Run Custom Shell Command")
             description: I18n.tr("Execute a shell command when the timer finishes.")
             placeholder: "e.g., systemctl suspend"
             defaultValue: ""
         }
-
     }
 
     SettingsCard {
+        id: soundSection
         SectionTitle {
             text: I18n.tr("Sound"); icon: "volume_up"
+            showReset: soundPath.isDirty || useSystemNotificationSound.isDirty
+            onResetClicked: {
+                soundPath.resetToDefault();
+                useSystemNotificationSound.resetToDefault();
+            }
         }
 
-        StringSetting {
+        StringSettingPlus {
+            id: soundPath
             settingKey: "soundPath"
             label: I18n.tr("Custom Sound Path")
             description: I18n.tr("Full path to sound file. Leave empty for default.")
@@ -183,38 +257,46 @@ PluginSettings {
             defaultValue: ""
         }
 
-        ToggleSetting {
+        Separator {}
+
+        ToggleSettingPlus {
+            id: useSystemNotificationSound
             settingKey: "useSystemNotificationSound"
             label: I18n.tr("Use System Notification Sound")
             description: I18n.tr("Use system's critical notification sound if no path is set.")
             defaultValue: true
         }
-
     }
 
     SettingsCard {
+        id: behaviorSection
         SectionTitle {
             text: I18n.tr("Behavior"); icon: "settings"
+            showReset: showTimeoutActions.isDirty || showHints.isDirty
+            onResetClicked: {
+                showTimeoutActions.resetToDefault();
+                showHints.resetToDefault();
+            }
         }
 
-        ToggleSetting {
+        ToggleSettingPlus {
+            id: showTimeoutActions
             settingKey: "showTimeoutActions"
             label: I18n.tr("Show 'When Done' Section")
-            description: I18n.tr("Display custom timeout and system actions in the popout.")
             defaultValue: true
         }
 
-        ToggleSetting {
+        Separator {}
+
+        ToggleSettingPlus {
+            id: showHints
             settingKey: "showHints"
             label: I18n.tr("Show Hints")
-            description: I18n.tr("Display helpful usage tips and shortcuts at the bottom of the popout.")
             defaultValue: true
         }
-
     }
 
     PluginAbout {
         repoUrl: "https://github.com/hthienloc/dms-timer"
     }
-
 }

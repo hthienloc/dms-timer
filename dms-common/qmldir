@@ -1,7 +1,11 @@
 module dms.common
-HintItem 1.0 HintItem.qml
-HintSection 1.0 HintSection.qml
 PluginAbout 1.0 PluginAbout.qml
-PluginShortcut 1.0 PluginShortcut.qml
 SectionTitle 1.0 SectionTitle.qml
 SettingsCard 1.0 SettingsCard.qml
+UsageGuide 1.0 UsageGuide.qml
+ToggleSettingPlus 1.0 ToggleSettingPlus.qml
+SelectionSettingPlus 1.0 SelectionSettingPlus.qml
+StringSettingPlus 1.0 StringSettingPlus.qml
+SliderSettingPlus 1.0 SliderSettingPlus.qml
+ColorSettingPlus 1.0 ColorSettingPlus.qml
+Separator 1.0 Separator.qml
