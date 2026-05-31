@@ -19,8 +19,18 @@ Column {
     readonly property bool isDirty: value !== defaultValue
 
     function resetToDefault() {
+        console.log(`[StringSettingPlus] Resetting ${settingKey} to ${defaultValue}`);
         value = defaultValue;
         textField.text = defaultValue;
+    }
+
+    onValueChanged: {
+        if (!isInitialized)
+            return;
+        const settings = findSettings();
+        if (settings) {
+            settings.saveValue(settingKey, value);
+        }
     }
 
     function loadValue() {
