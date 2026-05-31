@@ -12,25 +12,6 @@ PluginSettings {
     pluginId: "timer"
 
     SettingsCard {
-        SectionTitle { 
-            id: usageTitle
-            text: I18n.tr("Usage Guide")
-            icon: "menu_book" 
-            collapsible: true
-            settingKey: "usageGuideExpanded"
-        }
-
-        UsageGuide {
-            expanded: usageTitle.isExpanded
-            items: [
-                I18n.tr("<b>Left-click</b> the pill to <b>Pause</b> or <b>Resume</b> the timer."),
-                I18n.tr("<b>Right-click</b> the pill to <b>Reset</b> (or <b>Quick Start</b> if ready)."),
-                I18n.tr("Open the <b>Popout</b> to select presets or enter custom minutes.")
-            ]
-        }
-    }
-
-    SettingsCard {
         id: presetsSection
         SectionTitle {
             text: I18n.tr("Presets"); icon: "timer"
@@ -293,6 +274,25 @@ PluginSettings {
             settingKey: "showHints"
             label: I18n.tr("Show Hints")
             defaultValue: true
+        }
+    }
+
+    SettingsCard {
+        SectionTitle { 
+            id: usageTitle
+            text: I18n.tr("Usage Guide")
+            icon: "menu_book" 
+            collapsible: true
+            settingKey: "usageGuideExpanded"
+        }
+
+        UsageGuide {
+            expanded: usageTitle.isExpanded
+            items: [
+                I18n.tr("<b>Left-click</b> the pill to <b>Pause</b> or <b>Resume</b> the timer."),
+                I18n.tr("<b>Right-click</b> the pill to <b>Reset</b> (or <b>Quick Start</b> if ready)."),
+                I18n.tr("Open the <b>Popout</b> to select presets or enter custom minutes.")
+            ]
         }
     }
 
