@@ -103,9 +103,13 @@ PluginComponent {
     }
 
     function toggleTimer() {
-        if (globalRemainingSeconds.value <= 0)
-            return ;
+        if (globalTotalSeconds.value === 0)
+            return;
 
+        if (isFinished) {
+            resetTimer();
+            return;
+        }
         globalIsRunning.set(!globalIsRunning.value);
     }
 
@@ -115,79 +119,65 @@ PluginComponent {
         globalTotalSeconds.set(0);
     }
 
-    function isValidInput(text) {
-        if (text === "")
-            return false;
-
-        if (!/^\d+$/.test(text))
-            return false;
-
-        const num = parseInt(text, 10);
-        return num >= 1 && num <= 999;
-    }
-
+    // ORIGINAL STABLE CLICK LOGIC
+    // null means "let the shell handle popout" when isReady is true
     pillClickAction: root.isReady ? null : () => {
         root.toggleTimer();
     }
+    
     pillRightClickAction: () => {
         if (root.isReady)
             root.setTimer(root.quickStartMinutes);
         else
             root.resetTimer();
     }
-    popoutWidth: 360
-    popoutHeight: {
-        let baseHeight = root.showHints ? 385 : 335;
-        if (!root.showTimeoutActions) {
-            baseHeight -= 120;
-        }
-        const presetRows = Math.ceil(root.presets.length / 4);
-        const extraRows = Math.max(0, presetRows - 3);
-        return baseHeight + (extraRows * 42);
-    }
 
-    Connections {
-        target: globalIsRunning
-        function onValueChanged() {
-            if (root.autoDND) {
-                SessionData.setDoNotDisturb(globalIsRunning.value);
-            }
-        }
-    }
-
-    onAutoDNDChanged: {
-        if (!root.autoDND) {
-            SessionData.setDoNotDisturb(false);
-        } else if (globalIsRunning.value) {
-            SessionData.setDoNotDisturb(true);
-        }
-    }
-
-    Component.onDestruction: {
-        if (root.autoDND) {
-            SessionData.setDoNotDisturb(false);
-        }
+    // Global variable to keep track of the timer's state across instances
+    PluginGlobalVar {
+        id: globalRemainingSeconds
+        varName: "timerRemainingSeconds"
+        defaultValue: 0
     }
 
     PluginGlobalVar {
-        id: globalRemainingSeconds
-
-        varName: "remainingSeconds"
+        id: globalTotalSeconds
+        varName: "timerTotalSeconds"
         defaultValue: 0
     }
 
     PluginGlobalVar {
         id: globalIsRunning
-
-        varName: "isRunning"
+        varName: "timerIsRunning"
         defaultValue: false
     }
 
-    PluginGlobalVar {
-        id: globalTotalSeconds
+    Connections {
+        target: root.autoDND ? SessionData : null
+        function onIsDNDChanged() {
+            // No-op, just here to make the binding reactive
+        }
+    }
 
-        varName: "totalSeconds"
-        defaultValue: 0
+    onAutoDNDChanged: {
+        if (autoDND && globalIsRunning.value) {
+            SessionData.isDND = true;
+        } else if (!autoDND) {
+            // Don't force DND off, just let it be
+        }
+    }
+
+    // Ensure DND follows timer state if autoDND is enabled
+    Connections {
+        target: globalIsRunning
+        function onValueChanged() {
+            if (root.autoDND) {
+                if (globalIsRunning.value) {
+                    SessionData.isDND = true;
+                } else if (globalRemainingSeconds.value === 0) {
+                    SessionData.isDND = false;
+                }
+            }
+        }
     }
 
     Timer {
@@ -210,7 +200,8 @@ PluginComponent {
                     AudioService.playCriticalNotificationSound();
                 else
                     Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", "/usr/share/sounds/freedesktop/stereo/complete.oga"], null, 0);
-                // Handle system actions on timeout
+                
+                // Handle actions on timeout
                 if (root.systemActionOnTimeout === "lock")
                     Proc.runCommand("timer-lock", ["loginctl", "lock-session"], null, 0);
                 else if (root.systemActionOnTimeout === "suspend")
@@ -219,8 +210,7 @@ PluginComponent {
                     Proc.runCommand("timer-hibernate", ["systemctl", "hibernate"], null, 0);
                 else if (root.systemActionOnTimeout === "poweroff")
                     Proc.runCommand("timer-poweroff", ["systemctl", "poweroff"], null, 0);
-                // Handle custom command on timeout
-                if (root.customCommandOnTimeout !== "")
+                else if (root.systemActionOnTimeout === "custom" && root.customCommandOnTimeout !== "")
                     Proc.runCommand("timer-custom-command", ["bash", "-c", root.customCommandOnTimeout], null, 0);
 
                 if (root.timeoutBehavior === "reset")
@@ -238,37 +228,8 @@ PluginComponent {
             } else {
                 const nextState = !globalIsRunning.value;
                 root.toggleTimer();
-                return nextState ? "RUNNING" : "PAUSED";
+                return nextState ? "RESUMED" : "PAUSED";
             }
-        }
-
-        function pause() : string {
-            if (globalIsRunning.value) {
-                globalIsRunning.set(false);
-                return "PAUSED";
-            }
-            return "ALREADY_PAUSED";
-        }
-
-        function resume() : string {
-            if (!globalIsRunning.value && globalRemainingSeconds.value > 0) {
-                globalIsRunning.set(true);
-                return "RUNNING";
-            }
-            if (root.isReady) {
-                root.setTimer(root.quickStartMinutes);
-                return "STARTED (" + root.quickStartMinutes + "m)";
-            }
-            return "ALREADY_RUNNING";
-        }
-
-        function start(minutesStr) : string {
-            const minutes = parseInt(minutesStr);
-            if (isNaN(minutes) || minutes <= 0 || minutes > 999)
-                return "ERROR: Invalid minutes (must be 1-999)";
-
-            root.setTimer(minutes);
-            return "STARTED (" + minutes + "m)";
         }
 
         function reset() : string {
@@ -276,37 +237,25 @@ PluginComponent {
             return "RESET";
         }
 
-        function getStatus() : string {
-            const state = root.isReady ? "READY" : (root.isFinished ? "FINISHED" : (globalIsRunning.value ? "RUNNING" : "PAUSED"));
-            const remaining = globalRemainingSeconds.value;
-            const total = globalTotalSeconds.value;
-            const formatted = root.formatTime(remaining);
-            return JSON.stringify({
-                "state": state,
-                "remaining": remaining,
-                "total": total,
-                "formatted": formatted
-            });
+        function start(minutes) : string {
+            const m = parseInt(minutes);
+            if (isNaN(m) || m <= 0) return "ERROR: invalid minutes";
+            root.setTimer(m);
+            globalIsRunning.set(true);
+            return "STARTED (" + m + "m)";
         }
-
-        target: "timer"
     }
 
     horizontalBarPill: Component {
         Item {
-            // Size follows inner content; the pulse dot has a fixed footprint so the pill
-            // never collapses to zero when in pulse mode.
             implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitWidth
             implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillRow.implicitHeight
 
-            // ── Normal content row (icon / digits / inline progress bar) ─────────────
             Row {
                 id: pillRow
-
                 spacing: (root._pillHasIcon && !root._pillIsIconOnly && !root._pillIsPulse) ? Theme.spacingS : 0
                 visible: !root._pillIsPulse
 
-                // Status icon — shown when the format includes "_icon" or is "icon"
                 DankIcon {
                     name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
                     size: Theme.iconSizeSmall
@@ -315,7 +264,6 @@ PluginComponent {
                     visible: root._pillHasIcon
                 }
 
-                // Time digits (hidden in icon-only / progress / pulse modes)
                 StyledText {
                     text: formatTime(globalRemainingSeconds.value)
                     color: root.pillColor
@@ -325,7 +273,6 @@ PluginComponent {
                     visible: !root._pillIsIconOnly && !root._pillIsProgress && (!root.isReady || root.showReadyPlaceholder)
                 }
 
-                // Inline progress bar (replaces digits when format is "progress*")
                 Item {
                     width: 56
                     height: 6
@@ -345,17 +292,11 @@ PluginComponent {
                         radius: 3
                         color: root.pillColor
                     }
-
                 }
-
             }
 
-            // ── Pulse dot (surprise mode) ────────────────────────────────────────────
-            // A single dot that breathes faster as time runs out.
-            // Beat interval maps: full time → 2 s, last 10 s → 0.4 s.
             Item {
                 property real progress: globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)
-                // beatMs: slows to 2000 when fresh, speeds to 400 in the last moments
                 property int beatMs: root.isReady || root.isFinished ? 2000 : Math.max(400, Math.min(2000, Math.round(400 + progress * 1600)))
 
                 anchors.centerIn: parent
@@ -365,9 +306,7 @@ PluginComponent {
 
                 Rectangle {
                     id: pulseDot
-
                     property real scale: 1
-
                     anchors.centerIn: parent
                     width: Theme.iconSizeSmall * scale
                     height: width
@@ -377,256 +316,110 @@ PluginComponent {
                     SequentialAnimation on scale {
                         loops: Animation.Infinite
                         running: globalIsRunning.value && !root.isReady
-
-                        NumberAnimation {
-                            to: 1.4
-                            duration: parent.parent.beatMs / 2
-                            easing.type: Easing.InOutSine
-                        }
-
-                        NumberAnimation {
-                            to: 1
-                            duration: parent.parent.beatMs / 2
-                            easing.type: Easing.InOutSine
-                        }
-
+                        NumberAnimation { to: 1.4; duration: parent.parent.beatMs / 2; easing.type: Easing.InOutSine }
+                        NumberAnimation { to: 1; duration: parent.parent.beatMs / 2; easing.type: Easing.InOutSine }
                     }
-
                 }
-
             }
-
         }
-
     }
 
-    verticalBarPill: Component {
-        Item {
-            implicitWidth: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitWidth
-            implicitHeight: root._pillIsPulse ? (Theme.iconSizeSmall) : pillColumn.implicitHeight
-
-            Column {
-                id: pillColumn
-
-                spacing: (root._pillHasIcon && !root._pillIsIconOnly && !root._pillIsPulse) ? Theme.spacingS : 0
-                visible: !root._pillIsPulse
-
-                DankIcon {
-                    name: globalIsRunning.value ? "pause" : (root.isReady ? "timer" : "play_arrow")
-                    size: Theme.iconSizeSmall
-                    color: root.pillColor
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root._pillHasIcon
-                }
-
-                StyledText {
-                    text: formatTime(globalRemainingSeconds.value)
-                    color: root.pillColor
-                    font.pixelSize: Theme.fontSizeSmall
-                    isMonospace: true
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    rotation: 90
-                    visible: !root._pillIsIconOnly && !root._pillIsProgress && (!root.isReady || root.showReadyPlaceholder)
-                }
-
-                // Vertical inline progress bar
-                Item {
-                    width: 6
-                    height: 56
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: root._pillIsProgress && !root.isReady
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: 3
-                        color: root.pillColor
-                        opacity: 0.2
-                    }
-
-                    Rectangle {
-                        width: parent.width
-                        height: parent.height * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
-                        anchors.bottom: parent.bottom
-                        radius: 3
-                        color: root.pillColor
-                    }
-
-                }
-
-            }
-
-            // Pulse dot for vertical bar
-            Item {
-                property real progress: globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)
-                property int beatMs: root.isReady || root.isFinished ? 2000 : Math.max(400, Math.min(2000, Math.round(400 + progress * 1600)))
-
-                anchors.centerIn: parent
-                width: Theme.iconSizeSmall
-                height: Theme.iconSizeSmall
-                visible: root._pillIsPulse
-
-                Rectangle {
-                    id: pulseDotV
-
-                    property real scale: 1
-
-                    anchors.centerIn: parent
-                    width: Theme.iconSizeSmall * scale
-                    height: width
-                    radius: width / 2
-                    color: root.pillColor
-
-                    SequentialAnimation on scale {
-                        loops: Animation.Infinite
-                        running: globalIsRunning.value && !root.isReady
-
-                        NumberAnimation {
-                            to: 1.4
-                            duration: parent.parent.beatMs / 2
-                            easing.type: Easing.InOutSine
-                        }
-
-                        NumberAnimation {
-                            to: 1
-                            duration: parent.parent.beatMs / 2
-                            easing.type: Easing.InOutSine
-                        }
-
-                    }
-
-                }
-
-            }
-
+    popoutWidth: 400
+    popoutHeight: {
+        let baseHeight = root.showHints ? 385 : 335;
+        if (!root.showTimeoutActions) {
+            baseHeight -= 120;
         }
-
+        const presetRows = Math.ceil(root.presets.length / 4);
+        const extraRows = Math.max(0, presetRows - 3);
+        return baseHeight + (extraRows * 42);
     }
 
     popoutContent: Component {
         PopoutComponent {
-            id: mainContent
-
-            property var parentPopout: null
-
-            width: parent ? parent.width : 0
-            headerText: "Timer"
+            id: popout
+            headerText: I18n.tr("Timer")
             showCloseButton: true
-            focus: true
-            onParentPopoutChanged: root.activePopoutReference = parentPopout
-
-            PluginShortcut {
-                parentPopout: mainContent.parentPopout
-                onOpened: () => {
-                    if (root.isReady && root.manualInputInput)
-                        root.manualInputInput.forceActiveFocus();
-                    else
-                        mainColumn.forceActiveFocus();
-                }
-            }
 
             Column {
-                id: mainColumn
-
                 width: parent.width
-                spacing: Theme.spacingL
+                spacing: Theme.spacingM
 
-                Column {
+                StyledText {
+                    text: I18n.tr("Select a preset or enter minutes")
+                    font.pixelSize: Theme.fontSizeMedium
+                    color: Theme.surfaceVariantText
+                    horizontalAlignment: Text.AlignHCenter
                     width: parent.width
-                    spacing: Theme.spacingM
-
-                    StyledText {
-                        text: I18n.tr("Select a preset or enter minutes")
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-
-                    Flow {
-                        width: parent.width
-                        spacing: 6
-
-                        Repeater {
-                            model: root.presets
-
-                            delegate: Rectangle {
-                                width: (parent.width - 18) / 4
-                                height: 36
-                                radius: Theme.cornerRadius
-                                color: Theme.primary
-
-                                StyledText {
-                                    text: modelData >= 60 ? (modelData / 60) + "h" : modelData + "m"
-                                    font.pixelSize: 15
-                                    font.weight: Font.DemiBold
-                                    color: Theme.onPrimary
-                                    anchors.centerIn: parent
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: setTimer(modelData)
-                                    onPressed: parent.opacity = 0.7
-                                    onReleased: parent.opacity = 1
-                                }
-
-                            }
-
-                        }
-
-                    }
-
-                    Row {
-                        spacing: Theme.spacingS
-                        anchors.horizontalCenter: parent.horizontalCenter
-
-                        DankTextField {
-                            id: customInput
-
-                            width: 120
-                            placeholderText: "Manual mins..."
-                            showClearButton: true
-                            Component.onCompleted: {
-                                root.manualInputInput = customInput;
-                                if (root.isReady)
-                                    Qt.callLater(() => {
-                                    return customInput.forceActiveFocus();
-                                });
-
-                            }
-                            onAccepted: {
-                                if (isValidInput(text)) {
-                                    setTimer(parseInt(text));
-                                    text = "";
-                                }
-                            }
-                        }
-
-                        DankButton {
-                            text: I18n.tr("Set")
-                            backgroundColor: Theme.primary
-                            textColor: Theme.onPrimary
-                            enabled: isValidInput(customInput.text)
-                            onClicked: {
-                                setTimer(parseInt(customInput.text));
-                                customInput.text = "";
-                            }
-                        }
-
-                    }
-
                 }
 
+                // Presets Grid
+                Flow {
+                    width: parent.width
+                    spacing: Theme.spacingS
+                    layoutDirection: Qt.LeftToRight
+
+                    Repeater {
+                        model: root.presets
+                        delegate: DankButton {
+                            text: modelData + "m"
+                            width: (parent.width - (Theme.spacingS * 3)) / 4
+                            backgroundColor: Theme.primary
+                            textColor: Theme.onPrimary
+                            onClicked: {
+                                root.setTimer(modelData);
+                                globalIsRunning.set(true);
+                                root.closePopout();
+                            }
+                        }
+                    }
+                }
+
+                // Custom Input
+                Row {
+                    width: parent.width
+                    spacing: Theme.spacingS
+
+                    DankTextField {
+                        id: customInput
+                        placeholderText: "Minutes..."
+                        width: parent.width - setBtn.width - parent.spacing
+                        validator: IntValidator { bottom: 1; top: 1440 }
+                        Component.onCompleted: {
+                            root.manualInputInput = customInput;
+                            customInput.forceActiveFocus();
+                        }
+                        onAccepted: setBtn.clicked()
+                    }
+
+                    DankButton {
+                        id: setBtn
+                        text: I18n.tr("Set")
+                        iconName: "play_arrow"
+                        onClicked: {
+                            const mins = parseInt(customInput.text);
+                            if (!isNaN(mins) && mins > 0) {
+                                root.setTimer(mins);
+                                globalIsRunning.set(true);
+                                root.closePopout();
+                            }
+                        }
+                    }
+                }
+
+                // Quick Actions Section
                 Column {
                     width: parent.width
                     spacing: Theme.spacingS
                     visible: root.showTimeoutActions
 
+                    Separator { opacity: 0.1 }
+
                     StyledText {
                         text: I18n.tr("When Done")
                         font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.surfaceVariantText
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        font.weight: Font.Bold
+                        color: Theme.primary
                     }
 
                     Row {
@@ -635,25 +428,29 @@ PluginComponent {
 
                         Repeater {
                             model: [{
-                                "label": "None",
+                                "label": I18n.tr("None"),
                                 "value": "none",
                                 "icon": "block"
                             }, {
-                                "label": "Lock",
+                                "label": I18n.tr("Lock"),
                                 "value": "lock",
                                 "icon": "lock"
                             }, {
-                                "label": "Sleep",
+                                "label": I18n.tr("Sleep"),
                                 "value": "suspend",
                                 "icon": "snooze"
                             }, {
-                                "label": "Hibernate",
+                                "label": I18n.tr("Hibernate"),
                                 "value": "hibernate",
                                 "icon": "nights_stay"
                             }, {
-                                "label": "Shutdown",
+                                "label": I18n.tr("Shutdown"),
                                 "value": "poweroff",
                                 "icon": "power_settings_new"
+                            }, {
+                                "label": I18n.tr("Custom"),
+                                "value": "custom",
+                                "icon": "code"
                             }]
 
                             delegate: Rectangle {
@@ -703,9 +500,10 @@ PluginComponent {
 
                         width: parent.width - 24
                         anchors.horizontalCenter: parent.horizontalCenter
-                        placeholderText: "Or custom command (e.g. play-sound.sh)..."
+                        placeholderText: I18n.tr("Custom shell command...")
                         showClearButton: true
                         text: root.customCommandOnTimeout
+                        visible: root.systemActionOnTimeout === "custom"
                         onTextChanged: {
                             root.customCommandOnTimeout = text;
                             pluginService.savePluginData(root.pluginId, "customCommandOnTimeout", text);
@@ -719,16 +517,11 @@ PluginComponent {
                     showHints: root.showHints
 
                     HintItem {
-                        icon: "info"
+                        icon: "mouse"
                         text: I18n.tr("Left-click to Pause/Resume, Right-click to Reset (Quick Start when ready).")
                     }
-
                 }
-
             }
-
         }
-
     }
-
 }

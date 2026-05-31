@@ -202,11 +202,14 @@ PluginSettings {
             }, {
                 "label": I18n.tr("Power Off"),
                 "value": "poweroff"
+            }, {
+                "label": I18n.tr("Custom Command"),
+                "value": "custom"
             }]
             defaultValue: "none"
         }
 
-        Separator {}
+        Separator { visible: systemActionOnTimeout.value === "custom" }
 
         StringSettingPlus {
             id: customCommandOnTimeout
@@ -215,6 +218,7 @@ PluginSettings {
             description: I18n.tr("Execute a shell command when the timer finishes.")
             placeholder: "e.g., systemctl suspend"
             defaultValue: ""
+            visible: systemActionOnTimeout.value === "custom"
         }
     }
 
