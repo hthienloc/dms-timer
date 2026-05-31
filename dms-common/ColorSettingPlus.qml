@@ -3,7 +3,7 @@ import qs.Common
 import qs.Services
 import qs.Widgets
 
-Row {
+Column {
     id: root
 
     required property string settingKey
@@ -13,13 +13,17 @@ Row {
     property color value: defaultValue
 
     width: parent.width
-    height: 36
-    spacing: Theme.spacingM
+    spacing: Theme.spacingXS
+    
+    // Dynamic Opacity for disabled state
+    opacity: enabled ? 1 : 0.5
+    Behavior on opacity { NumberAnimation { duration: Theme.shortDuration } }
 
     property bool isInitialized: false
     readonly property bool isDirty: value.toString() !== defaultValue.toString()
 
     function resetToDefault() {
+        console.log(`[ColorSettingPlus] Resetting ${settingKey}`);
         value = defaultValue;
     }
 
@@ -32,38 +36,34 @@ Row {
         }
     }
 
-    Component.onCompleted: {
-        Qt.callLater(loadValue);
-    }
+    Component.onCompleted: Qt.callLater(loadValue);
 
     onValueChanged: {
-        if (!isInitialized)
-            return;
+        if (!isInitialized) return;
         const settings = findSettings();
-        if (settings) {
-            settings.saveValue(settingKey, value);
-        }
+        if (settings) settings.saveValue(settingKey, value);
     }
 
     function findSettings() {
         let item = parent;
         while (item) {
-            if (item.saveValue !== undefined && item.loadValue !== undefined) {
-                return item;
-            }
+            if (item.saveValue !== undefined && item.loadValue !== undefined) return item;
             item = item.parent;
         }
         return null;
     }
 
-    Column {
-        width: parent.width - colorPreview.width - parent.spacing
-        spacing: Theme.spacingXS
-        anchors.verticalCenter: parent.verticalCenter
+    // ── Label Row ─────────────────────────────────────────────────────────
+    Item {
+        width: parent.width
+        height: 32
 
         Row {
+            anchors.left: parent.left
+            anchors.right: individualReset.visible ? individualReset.left : parent.right
+            anchors.rightMargin: Theme.spacingS
+            anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.spacingXS
-            width: parent.width
 
             StyledText {
                 text: root.label
@@ -72,7 +72,7 @@ Row {
                 color: Theme.surfaceText
                 elide: Text.ElideRight
                 maximumLineCount: 1
-                width: Math.min(implicitWidth, parent.width - (infoIcon.visible ? infoIcon.width + parent.spacing : 0))
+                width: Math.min(implicitWidth, parent.width - (infoIcon.visible ? 20 : 0))
             }
 
             DankIcon {
@@ -83,7 +83,6 @@ Row {
                 visible: root.description !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: 0.6
-
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
@@ -92,21 +91,66 @@ Row {
                 }
             }
         }
+
+        Item {
+            id: individualReset
+            width: 28; height: 28
+            visible: root.isDirty
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            Rectangle {
+                anchors.fill: parent
+                radius: 14
+                color: resetArea.containsMouse ? Theme.primaryHoverLight : "transparent"
+            }
+            DankIcon {
+                name: "restart_alt"
+                size: 16
+                color: Theme.primary
+                anchors.centerIn: parent
+                opacity: 0.8
+            }
+            MouseArea {
+                id: resetArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.resetToDefault()
+            }
+        }
     }
 
-    DankTooltipV2 {
-        id: sharedTooltip
-    }
-
+    // ── Color Preview (Full Width + Hex Label) ────────────────────────────
     Rectangle {
         id: colorPreview
-        width: 80
-        height: 28 // Giảm một chút cho cân đối
+        width: parent.width
+        height: 32
         radius: Theme.cornerRadius
         color: root.value
         border.color: Theme.outlineStrong
         border.width: 2
-        anchors.verticalCenter: parent.verticalCenter
+        
+        Behavior on color { ColorAnimation { duration: Theme.shortDuration } }
+
+        Row {
+            anchors.centerIn: parent
+            spacing: Theme.spacingS
+            
+            DankIcon {
+                name: "palette"
+                size: 14
+                color: root.value.hslLightness > 0.6 ? "#000000" : "#ffffff"
+                opacity: 0.7
+            }
+
+            StyledText {
+                text: root.value.toString().toUpperCase()
+                font.pixelSize: Theme.fontSizeSmall
+                font.weight: Font.Bold
+                isMonospace: true
+                color: root.value.hslLightness > 0.6 ? "#000000" : "#ffffff"
+            }
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -123,4 +167,6 @@ Row {
             }
         }
     }
+
+    DankTooltipV2 { id: sharedTooltip }
 }

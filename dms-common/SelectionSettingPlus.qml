@@ -2,7 +2,7 @@ import QtQuick
 import qs.Common
 import qs.Widgets
 
-Row {
+Column {
     id: root
 
     required property string settingKey
@@ -13,15 +13,17 @@ Row {
     property string value: defaultValue
 
     width: parent.width
-    height: 36
-    spacing: Theme.spacingM
+    spacing: Theme.spacingXS
+    
+    // Dynamic Opacity for disabled state (Original DMS feature)
+    opacity: enabled ? 1 : 0.5
+    Behavior on opacity { NumberAnimation { duration: Theme.shortDuration } }
 
     readonly property bool isDirty: String(value) !== String(defaultValue)
 
     function resetToDefault() {
-        console.log(`[SelectionSettingPlus] Resetting ${settingKey} to ${defaultValue}`);
+        console.log(`[SelectionSettingPlus] Resetting ${settingKey}`);
         value = defaultValue;
-        // Force dropdown update
         dropdown.currentValue = root.valueToLabel[defaultValue] || defaultValue;
     }
 
@@ -32,9 +34,7 @@ Row {
         }
     }
 
-    Component.onCompleted: {
-        loadValue()
-    }
+    Component.onCompleted: loadValue()
 
     readonly property var optionLabels: {
         const labels = []
@@ -48,11 +48,8 @@ Row {
         const map = {}
         for (let i = 0; i < options.length; i++) {
             const opt = options[i]
-            if (typeof opt === 'object') {
-                map[opt.value] = opt.label
-            } else {
-                map[opt] = opt
-            }
+            if (typeof opt === 'object') map[opt.value] = opt.label
+            else map[opt] = opt
         }
         return map
     }
@@ -61,41 +58,37 @@ Row {
         const map = {}
         for (let i = 0; i < options.length; i++) {
             const opt = options[i]
-            if (typeof opt === 'object') {
-                map[opt.label] = opt.value
-            } else {
-                map[opt] = opt
-            }
+            if (typeof opt === 'object') map[opt.label] = opt.value
+            else map[opt] = opt
         }
         return map
     }
 
     onValueChanged: {
         const settings = findSettings()
-        if (settings) {
-            settings.saveValue(settingKey, value)
-        }
+        if (settings) settings.saveValue(settingKey, value)
     }
 
     function findSettings() {
         let item = parent
         while (item) {
-            if (item.saveValue !== undefined && item.loadValue !== undefined) {
-                return item
-            }
+            if (item.saveValue !== undefined && item.loadValue !== undefined) return item
             item = item.parent
         }
         return null
     }
 
-    Column {
-        width: parent.width - dropdown.width - parent.spacing
-        spacing: Theme.spacingXS
-        anchors.verticalCenter: parent.verticalCenter
+    // ── Label Row ─────────────────────────────────────────────────────────
+    Item {
+        width: parent.width
+        height: 32
 
         Row {
+            anchors.left: parent.left
+            anchors.right: individualReset.visible ? individualReset.left : parent.right
+            anchors.rightMargin: Theme.spacingS
+            anchors.verticalCenter: parent.verticalCenter
             spacing: Theme.spacingXS
-            width: parent.width
 
             StyledText {
                 text: root.label
@@ -104,7 +97,7 @@ Row {
                 color: Theme.surfaceText
                 elide: Text.ElideRight
                 maximumLineCount: 1
-                width: Math.min(implicitWidth, parent.width - (infoIcon.visible ? infoIcon.width + parent.spacing : 0))
+                width: Math.min(implicitWidth, parent.width - (infoIcon.visible ? 20 : 0))
             }
 
             DankIcon {
@@ -115,7 +108,6 @@ Row {
                 visible: root.description !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 opacity: 0.6
-
                 MouseArea {
                     anchors.fill: parent
                     hoverEnabled: true
@@ -124,22 +116,46 @@ Row {
                 }
             }
         }
+
+        Item {
+            id: individualReset
+            width: 28; height: 28
+            visible: root.isDirty
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            Rectangle {
+                anchors.fill: parent
+                radius: 14
+                color: resetArea.containsMouse ? Theme.primaryHoverLight : "transparent"
+            }
+            DankIcon {
+                name: "restart_alt"
+                size: 16
+                color: Theme.primary
+                anchors.centerIn: parent
+                opacity: 0.8
+            }
+            MouseArea {
+                id: resetArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.resetToDefault()
+            }
+        }
     }
 
-    DankTooltipV2 {
-        id: sharedTooltip
-    }
-
+    // ── Dropdown (Full Width) ─────────────────────────────────────────────
     DankDropdown {
         id: dropdown
-        dropdownWidth: 160
-        height: 32 // Nhỏ hơn container 36px một chút
+        width: parent.width
         compactMode: true
-        anchors.verticalCenter: parent.verticalCenter
         currentValue: root.valueToLabel[root.value] || root.value
         options: root.optionLabels
         onValueChanged: newValue => {
             root.value = root.labelToValue[newValue] || newValue
         }
     }
+
+    DankTooltipV2 { id: sharedTooltip }
 }

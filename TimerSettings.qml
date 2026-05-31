@@ -240,6 +240,8 @@ PluginSettings {
             description: I18n.tr("Full path to sound file. Leave empty for default.")
             placeholder: "/usr/share/sounds/freedesktop/stereo/complete.oga"
             defaultValue: ""
+            isFile: true
+            fileExtensions: [I18n.tr("Audio files") + " (*.mp3 *.wav *.ogg *.oga *.flac)", I18n.tr("All files") + " (*)"]
         }
 
         Separator {}
