@@ -115,7 +115,7 @@ PluginSettings {
             }
         }
 
-        SelectionSettingPlus {
+        ButtonGroupSettingPlus {
             id: timeoutBehavior
             settingKey: "timeoutBehavior"
             label: I18n.tr("When Finished")
