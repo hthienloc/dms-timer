@@ -237,7 +237,7 @@ PluginComponent {
             return "RESET";
         }
 
-        function start(minutes) : string {
+        function start(minutes: string) : string {
             const m = parseInt(minutes);
             if (isNaN(m) || m <= 0) return "ERROR: invalid minutes";
             root.setTimer(m);
