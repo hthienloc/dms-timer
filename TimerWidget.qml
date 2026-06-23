@@ -241,9 +241,18 @@ PluginComponent {
             const m = parseInt(minutes);
             if (isNaN(m) || m <= 0) return "ERROR: invalid minutes";
             root.setTimer(m);
-            globalIsRunning.set(true);
             return "STARTED (" + m + "m)";
         }
+
+        function status() : string {
+            if (root.isReady) return "ready";
+            if (root.isFinished) return "finished";
+            if (root.isPaused) return "paused";
+            return "running";
+        }
+
+        target: "timer"
+        enabled: true
     }
 
     horizontalBarPill: Component {
