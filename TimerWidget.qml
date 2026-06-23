@@ -247,7 +247,7 @@ PluginComponent {
         function status() : string {
             if (root.isReady) return "ready";
             if (root.isFinished) return "finished";
-            if (root.isPaused) return "paused";
+            if (!globalIsRunning.value) return "paused";
             return "running";
         }
 
