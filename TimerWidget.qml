@@ -225,11 +225,37 @@ PluginComponent {
             if (root.isReady) {
                 root.setTimer(root.quickStartMinutes);
                 return "STARTED (" + root.quickStartMinutes + "m)";
+            } else if (root.isFinished) {
+                root.resetTimer();
+                return "RESET";
             } else {
                 const nextState = !globalIsRunning.value;
                 root.toggleTimer();
-                return nextState ? "RESUMED" : "PAUSED";
+                return nextState ? "RUNNING" : "PAUSED";
             }
+        }
+
+        function pause() : string {
+            if (globalIsRunning.value) {
+                root.toggleTimer();
+                return "PAUSED";
+            }
+            return "ALREADY_PAUSED";
+        }
+
+        function resume() : string {
+            if (root.isReady) {
+                root.setTimer(root.quickStartMinutes);
+                return "STARTED (" + root.quickStartMinutes + "m)";
+            }
+            if (root.isFinished) {
+                return "ERROR: timer is finished";
+            }
+            if (!globalIsRunning.value) {
+                root.toggleTimer();
+                return "RUNNING";
+            }
+            return "ALREADY_RUNNING";
         }
 
         function reset() : string {
@@ -249,6 +275,16 @@ PluginComponent {
             if (root.isFinished) return "finished";
             if (!globalIsRunning.value) return "paused";
             return "running";
+        }
+
+        function getStatus() : string {
+            const data = {
+                "state": status(),
+                "remaining": globalRemainingSeconds.value,
+                "total": globalTotalSeconds.value,
+                "formatted": root.formatTime(globalRemainingSeconds.value)
+            };
+            return JSON.stringify(data);
         }
 
         target: "timer"
