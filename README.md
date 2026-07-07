@@ -60,7 +60,7 @@ dms ipc call timer getStatus | jq -r '.formatted'
 
 ## License
 
-GPL-3.0
+MIT
 
 ## Roadmap / TODO
 
