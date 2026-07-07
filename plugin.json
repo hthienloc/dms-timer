@@ -6,15 +6,12 @@
   "license": "GPL-3.0",
   "author": "Loc Huynh",
   "icon": "timer",
-  "type": ["daemon", "widget"],
+  "type": "widget",
   "capabilities": [
     "dankbar-widget",
     "ipc"
   ],
-  "components": {
-    "daemon": "./TimerWidget.qml",
-    "widget": "./TimerWidget.qml"
-  },
+  "component": "./TimerWidget.qml",
   "settings": "./TimerSettings.qml",
   "permissions": [
     "settings_read",
