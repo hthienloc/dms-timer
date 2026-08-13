@@ -42,9 +42,9 @@ PluginComponent {
     readonly property bool showHints: pluginData.showHints ?? true
     readonly property bool autoDND: pluginData.autoDND ?? false
     readonly property bool showTimeoutActions: pluginData.showTimeoutActions ?? true
-    readonly property bool isFinished: globalRemainingSeconds.value === 0 && globalTotalSeconds.value > 0
-    readonly property bool isPaused: !globalIsRunning.value && globalRemainingSeconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
-    readonly property bool isReady: globalRemainingSeconds.value === 0 && globalTotalSeconds.value === 0
+    readonly property bool isFinished: globalRemainingMilliseconds.value === 0 && globalTotalSeconds.value > 0
+    readonly property bool isPaused: !globalIsRunning.value && globalRemainingMilliseconds.value > 0 && globalRemainingSeconds.value < globalTotalSeconds.value
+    readonly property bool isReady: globalRemainingMilliseconds.value === 0 && globalTotalSeconds.value === 0
     readonly property color pillColor: {
         if (globalIsRunning.value)
             return Theme.primary;
@@ -95,11 +95,55 @@ PluginComponent {
     }
 
     function setTimer(minutes) {
-        const seconds = minutes * 60;
+        const durationMs = minutes * 60 * 1000;
+        const seconds = Math.ceil(durationMs / 1000);
         globalTotalSeconds.set(seconds);
+        globalRemainingMilliseconds.set(durationMs);
         globalRemainingSeconds.set(seconds);
+        globalEndTimeMs.set(Date.now() + durationMs);
         globalIsRunning.set(true);
         root.closePopout();
+    }
+
+    function updateRemaining() {
+        if (!globalIsRunning.value || globalEndTimeMs.value <= 0)
+            return;
+
+        const remainingMs = Math.max(0, globalEndTimeMs.value - Date.now());
+        globalRemainingMilliseconds.set(remainingMs);
+        globalRemainingSeconds.set(Math.ceil(remainingMs / 1000));
+
+        if (remainingMs === 0) {
+            globalIsRunning.set(false);
+            globalEndTimeMs.set(0);
+            handleTimeout();
+        }
+    }
+
+    function handleTimeout() {
+        if (root.showNotification)
+            Proc.runCommand("timer-notify", ["notify-send", "-i", "appointment-soon", "-u", "normal", root.notificationTitle, root.notificationBody], null, 0);
+
+        if (root.soundPath !== "")
+            Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", root.soundPath], null, 0);
+        else if (root.useSystemNotificationSound && AudioService.soundsAvailable)
+            AudioService.playCriticalNotificationSound();
+        else
+            Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", "/usr/share/sounds/freedesktop/stereo/complete.oga"], null, 0);
+
+        if (root.systemActionOnTimeout === "lock")
+            Proc.runCommand("timer-lock", ["loginctl", "lock-session"], null, 0);
+        else if (root.systemActionOnTimeout === "suspend")
+            Proc.runCommand("timer-suspend", ["systemctl", "suspend"], null, 0);
+        else if (root.systemActionOnTimeout === "hibernate")
+            Proc.runCommand("timer-hibernate", ["systemctl", "hibernate"], null, 0);
+        else if (root.systemActionOnTimeout === "poweroff")
+            Proc.runCommand("timer-poweroff", ["systemctl", "poweroff"], null, 0);
+        else if (root.systemActionOnTimeout === "custom" && root.customCommandOnTimeout !== "")
+            Proc.runCommand("timer-custom-command", ["bash", "-c", root.customCommandOnTimeout], null, 0);
+
+        if (root.timeoutBehavior === "reset")
+            root.resetTimer();
     }
 
     function toggleTimer() {
@@ -110,17 +154,27 @@ PluginComponent {
             resetTimer();
             return;
         }
-        globalIsRunning.set(!globalIsRunning.value);
+        if (globalIsRunning.value) {
+            updateRemaining();
+            if (globalRemainingMilliseconds.value === 0)
+                return;
+
+            globalIsRunning.set(false);
+            globalEndTimeMs.set(0);
+        } else if (globalRemainingMilliseconds.value > 0) {
+            globalEndTimeMs.set(Date.now() + globalRemainingMilliseconds.value);
+            globalIsRunning.set(true);
+        }
     }
 
     function resetTimer() {
         globalIsRunning.set(false);
+        globalEndTimeMs.set(0);
+        globalRemainingMilliseconds.set(0);
         globalRemainingSeconds.set(0);
         globalTotalSeconds.set(0);
     }
 
-    // ORIGINAL STABLE CLICK LOGIC
-    // null means "let the shell handle popout" when isReady is true
     pillClickAction: root.isReady ? null : () => {
         root.toggleTimer();
     }
@@ -140,6 +194,12 @@ PluginComponent {
     }
 
     PluginGlobalVar {
+        id: globalRemainingMilliseconds
+        varName: "timerRemainingMilliseconds"
+        defaultValue: 0
+    }
+
+    PluginGlobalVar {
         id: globalTotalSeconds
         varName: "timerTotalSeconds"
         defaultValue: 0
@@ -149,6 +209,12 @@ PluginComponent {
         id: globalIsRunning
         varName: "timerIsRunning"
         defaultValue: false
+    }
+
+    PluginGlobalVar {
+        id: globalEndTimeMs
+        varName: "timerEndTimeMs"
+        defaultValue: 0
     }
 
     Connections {
@@ -183,45 +249,17 @@ PluginComponent {
     Timer {
         id: timer
 
-        interval: 1000
+        interval: 100
         repeat: true
-        running: globalIsRunning.value && globalRemainingSeconds.value > 0
+        running: globalIsRunning.value && globalRemainingMilliseconds.value > 0
         onTriggered: {
-            const newVal = globalRemainingSeconds.value - 1;
-            globalRemainingSeconds.set(newVal);
-            if (newVal === 0) {
-                globalIsRunning.set(false);
-                if (root.showNotification)
-                    Proc.runCommand("timer-notify", ["notify-send", "-i", "appointment-soon", "-u", "normal", root.notificationTitle, root.notificationBody], null, 0);
-
-                if (root.soundPath !== "")
-                    Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", root.soundPath], null, 0);
-                else if (root.useSystemNotificationSound && AudioService.soundsAvailable)
-                    AudioService.playCriticalNotificationSound();
-                else
-                    Proc.runCommand("timer-sound", ["paplay", "--property=media.role=event", "/usr/share/sounds/freedesktop/stereo/complete.oga"], null, 0);
-                
-                // Handle actions on timeout
-                if (root.systemActionOnTimeout === "lock")
-                    Proc.runCommand("timer-lock", ["loginctl", "lock-session"], null, 0);
-                else if (root.systemActionOnTimeout === "suspend")
-                    Proc.runCommand("timer-suspend", ["systemctl", "suspend"], null, 0);
-                else if (root.systemActionOnTimeout === "hibernate")
-                    Proc.runCommand("timer-hibernate", ["systemctl", "hibernate"], null, 0);
-                else if (root.systemActionOnTimeout === "poweroff")
-                    Proc.runCommand("timer-poweroff", ["systemctl", "poweroff"], null, 0);
-                else if (root.systemActionOnTimeout === "custom" && root.customCommandOnTimeout !== "")
-                    Proc.runCommand("timer-custom-command", ["bash", "-c", root.customCommandOnTimeout], null, 0);
-
-                if (root.timeoutBehavior === "reset")
-                    root.resetTimer();
-
-            }
+            root.updateRemaining();
         }
     }
 
     IpcHandler {
         function toggle() : string {
+            root.updateRemaining();
             if (root.isReady) {
                 root.setTimer(root.quickStartMinutes);
                 return "STARTED (" + root.quickStartMinutes + "m)";
@@ -236,6 +274,7 @@ PluginComponent {
         }
 
         function pause() : string {
+            root.updateRemaining();
             if (globalIsRunning.value) {
                 root.toggleTimer();
                 return "PAUSED";
@@ -244,6 +283,7 @@ PluginComponent {
         }
 
         function resume() : string {
+            root.updateRemaining();
             if (root.isReady) {
                 root.setTimer(root.quickStartMinutes);
                 return "STARTED (" + root.quickStartMinutes + "m)";
@@ -271,6 +311,7 @@ PluginComponent {
         }
 
         function status() : string {
+            root.updateRemaining();
             if (root.isReady) return "ready";
             if (root.isFinished) return "finished";
             if (!globalIsRunning.value) return "paused";
@@ -278,6 +319,7 @@ PluginComponent {
         }
 
         function getStatus() : string {
+            root.updateRemaining();
             const data = {
                 "state": status(),
                 "remaining": globalRemainingSeconds.value,
@@ -332,7 +374,7 @@ PluginComponent {
                     }
 
                     Rectangle {
-                        width: parent.width * (1 - (globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)))
+                        width: parent.width * (1 - (globalRemainingMilliseconds.value / Math.max(1, globalTotalSeconds.value * 1000)))
                         height: parent.height
                         radius: 3
                         color: root.pillColor
@@ -341,7 +383,7 @@ PluginComponent {
             }
 
             Item {
-                property real progress: globalRemainingSeconds.value / Math.max(1, globalTotalSeconds.value)
+                property real progress: globalRemainingMilliseconds.value / Math.max(1, globalTotalSeconds.value * 1000)
                 property int beatMs: root.isReady || root.isFinished ? 2000 : Math.max(400, Math.min(2000, Math.round(400 + progress * 1600)))
 
                 anchors.centerIn: parent
