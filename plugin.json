@@ -2,7 +2,7 @@
   "id": "timer",
   "name": "Timer",
   "description": "Countdown timer with presets and custom input",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "license": "MIT",
   "author": "Loc Huynh",
   "icon": "timer",
